@@ -1,0 +1,24 @@
+# Documentation
+
+_index.md
+
+# Firmware
+
+## exclusions
+.pio
+.vscode/*
+sdkconfig.*
+managed_components
+
+## exceptions
+!sdkconfig.defaults
+
+# Sphinx Python
+env/
+docs/build/
+docs/source/firmware/api/rst
+docs/source/firmware/api/xml
+
+# Global
+
+temp/
