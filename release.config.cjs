@@ -91,7 +91,11 @@ module.exports = {
       '@semantic-release/github',
       {
         assets: [
-          {}
+          {
+            path: ".pio/build/development/firmware.bin",
+            name: "firmware-${nextRelease.gitTag}.bin",
+            label: "Firmware Binary"
+          }
         ],
         failComment: false,
         labels: ['bug', 'maintenance'],
