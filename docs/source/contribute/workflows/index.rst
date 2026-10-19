@@ -17,4 +17,5 @@ When running for the first time, it should pull an ubuntu image which could take
    :caption: Table of Contents
 
    cicd/index
+   platformio/index
    release/index
