@@ -1,0 +1,26 @@
+idf_component_register(
+    SRCS
+        "fsm.c"
+        "states/src/attack.c"
+        "states/src/autonomous.c"
+        "states/src/boot.c"
+        "states/src/manual.c"
+        "states/src/opening.c"
+        "states/src/safe.c"
+        "states/src/search.c"
+        "states/src/survive.c"
+    INCLUDE_DIRS
+        "include"
+        "states/include"
+    REQUIRES
+        config
+        controller
+        esc
+        esp_timer
+        ir
+        led
+        logging
+        pwm
+        radio
+        sensor
+)

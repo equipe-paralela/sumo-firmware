@@ -1,0 +1,141 @@
+#include "sensor.h"
+
+static sensor_config_t sensors[NUMBER_OF_SENSORS] = {
+    [SENSOR_JS2_DL] = {
+        .name       = "JS200XF_DIAGONAL_L",
+        .channel    = MUX_CHANNEL_14,
+        .mode       = SENSOR_MODE_DIGITAL,
+        .threshold  = 0.3500f
+    },
+    [SENSOR_JS2_DR] = {
+        .name       = "JS200XF_DIAGONAL_R",
+        .channel    = MUX_CHANNEL_01,
+        .mode       = SENSOR_MODE_DIGITAL,
+        .threshold  = 0.3500f
+    },
+    [SENSOR_JS2_FL] = {
+        .name       = "JS200XF_FRONT_L",
+        .channel    = MUX_CHANNEL_15,
+        .mode       = SENSOR_MODE_DIGITAL,
+        .threshold  = 0.3500f
+    },
+    [SENSOR_JS2_FR] = {
+        .name       = "JS200XF_FRONT_R",
+        .channel    = MUX_CHANNEL_00,
+        .mode       = SENSOR_MODE_DIGITAL,
+        .threshold  = 0.3500f
+    },
+    [SENSOR_JS2_LL] = {
+        .name       = "JS200XF_LATERAL_L",
+        .channel    = MUX_CHANNEL_13,
+        .mode       = SENSOR_MODE_DIGITAL,
+        .threshold  = 0.3500f
+    },
+    [SENSOR_JS2_LR] = {
+        .name       = "JS200XF_LATERAL_R",
+        .channel    = MUX_CHANNEL_02,
+        .mode       = SENSOR_MODE_DIGITAL,
+        .threshold  = 0.3500f
+    },
+    [SENSOR_QRE_BL] = {
+        .name       = "QRE1113_BACK_L",
+        .channel    = MUX_CHANNEL_11,
+        .mode       = SENSOR_MODE_DIGITAL,
+        .threshold  = 0.3500f
+    },
+    [SENSOR_QRE_BR] = {
+        .name       = "QRE1113_BACK_R",
+        .channel    = MUX_CHANNEL_04,
+        .mode       = SENSOR_MODE_DIGITAL,
+        .threshold  = 0.3500f
+    },
+    [SENSOR_QRE_FL] = {
+        .name       = "QRE1113_FRONT_L",
+        .channel    = MUX_CHANNEL_12,
+        .mode       = SENSOR_MODE_DIGITAL,
+        .threshold  = 0.3500f
+    },
+    [SENSOR_QRE_FR] = {
+        .name       = "QRE1113_FRONT_R",
+        .channel    = MUX_CHANNEL_03,
+        .mode       = SENSOR_MODE_DIGITAL,
+        .threshold  = 0.3500f
+    },
+};
+
+bool sensor_detected_line(void) {
+    return (
+        (sensor_get_value(SENSOR_QRE_FL) == SENSOR_MIN_VALUE) ||
+        (sensor_get_value(SENSOR_QRE_FR) == SENSOR_MIN_VALUE) ||
+        (sensor_get_value(SENSOR_QRE_BR) == SENSOR_MIN_VALUE) ||
+        (sensor_get_value(SENSOR_QRE_BL) == SENSOR_MIN_VALUE)
+    );
+}
+
+bool sensor_detected_obstacle_front(void) {
+    return (
+        (sensor_get_value(SENSOR_JS2_FL) == SENSOR_MAX_VALUE) ||
+        (sensor_get_value(SENSOR_JS2_FR) == SENSOR_MAX_VALUE)
+    );
+}
+
+bool sensor_detected_obstacle_sides(void) {
+    return (
+        // (sensor_get_value(SENSOR_JS2_FL) == SENSOR_MIN_VALUE) &&
+        // (sensor_get_value(SENSOR_JS2_FR) == SENSOR_MIN_VALUE) &&
+        sensor_detected_obstacle_side_left() ||
+        sensor_detected_obstacle_side_right()
+    );
+}
+
+bool sensor_detected_obstacle_side_left(void) {
+    return (
+        (sensor_get_value(SENSOR_JS2_LL) == SENSOR_MAX_VALUE) ||
+        (sensor_get_value(SENSOR_JS2_DL) == SENSOR_MAX_VALUE)
+    );
+}
+
+bool sensor_detected_obstacle_side_right(void) {
+    return (
+        (sensor_get_value(SENSOR_JS2_LR) == SENSOR_MAX_VALUE) ||
+        (sensor_get_value(SENSOR_JS2_DR) == SENSOR_MAX_VALUE)
+    );
+}
+
+const char *sensor_get_name(sensor_t sensor) {
+    return sensors[sensor].name;
+}
+
+float sensor_get_value(sensor_t sensor) {
+    float sensor_value = mux_read_channel(sensors[sensor].channel);
+
+    if(sensors[sensor].mode == SENSOR_MODE_DIGITAL) {
+        if (sensor_value >= sensors[sensor].threshold) {
+            return SENSOR_MAX_VALUE;
+        } else {
+            return SENSOR_MIN_VALUE;
+        };
+    };
+
+    if (sensor_value > SENSOR_MAX_VALUE) sensor_value = SENSOR_MAX_VALUE;
+    if (sensor_value < SENSOR_MIN_VALUE) sensor_value = SENSOR_MIN_VALUE;
+
+    return sensor_value;
+}
+
+float sensor_get_value_raw(sensor_t sensor) {
+    return mux_read_channel(sensors[sensor].channel);
+}
+
+void sensor_init(void) {
+    mux_buffer_t buffers_config[NUMBER_OF_MUX_CHANNELS];
+    for (uint8_t i = 0; i < NUMBER_OF_MUX_CHANNELS; i++) {
+        buffers_config[i].active = false;
+    }
+
+    for (uint8_t j = 0; j < NUMBER_OF_SENSORS; j++) {
+        buffers_config[sensors[j].channel].active = true;
+    }
+
+    mux_init(buffers_config);
+}
