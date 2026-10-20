@@ -25,8 +25,8 @@ typedef enum ir_state {
  * @brief Infrared receiver device.
  */
 typedef struct ir {
-    const char *name;                               /**< Human-readable null-terminated infrared name. */
-    const char *state_names[NUMBER_OF_IR_STATES];   /**< Human-readable null-terminated infrared state names. */
+    const char *name;                               /**< Human-readable, null-terminated name of the infrared. */
+    const char *state_names[NUMBER_OF_IR_STATES];   /**< Array of human-readable, null-terminated names of the infrared states. */
     volatile ir_state_t state;                      /**< Infrared state. */
     pin_t pin;                                      /**< Infrared pin connection. */
 } ir_t;

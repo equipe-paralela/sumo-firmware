@@ -114,16 +114,6 @@ bool controller_start(const controller_sequence_t *sequence);
 void controller_step(void);
 
 /**
- * @brief Cancel current sequence without changing ESC output.
- *
- * Only use when immediately replacing the command with another active
- * movement or transitioning into a state that explicitly stops the motors.
- *
- * @note The ESCs keep executing their last PWM command until overwritten.
- */
-void controller_cancel(void);
-
-/**
  * @brief Controller stop a command sequence.
  *
  * Calls ``esc_set_pwm_mix_neutral()``, reinitialize the current command

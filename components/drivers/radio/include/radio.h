@@ -38,7 +38,7 @@ typedef enum radio_status {
  * @brief Radio channel configuration.
  */
 typedef struct radio_config {
-    const char *name;       /**< Human-readable null-terminated string representing channel name. */
+    const char *name;       /**< Human-readable, null-terminated name of the channel. */
     pin_t pin;              /**< Channel pin. */
     pwm_norm_t pwm;         /**< Latest normalized PWM pulse width capture via interruptions. */
     int64_t rise_time_us;   /**< Last rising time in microseconds. */

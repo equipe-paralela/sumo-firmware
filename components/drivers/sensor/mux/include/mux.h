@@ -71,7 +71,7 @@ typedef struct mux_buffer {
  * @brief Multiplexer abstraction.
  */
 typedef struct mux {
-    const char *name;                               /**< Human-readable null-terminated Multiplexer name. */
+    const char *name;                               /**< Human-readable, null-terminated name of the multiplexer. */
     adc_oneshot_unit_handle_t adc_handle;           /**< Multiplexer ADC unit handler. */
     esp_timer_handle_t timer_handle;                /**< Multiplexer Timer handler. */
     mux_buffer_t buffers[NUMBER_OF_MUX_CHANNELS];   /**< Multiplexer ADC measurements buffer. */

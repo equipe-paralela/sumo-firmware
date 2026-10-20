@@ -16,7 +16,7 @@
  * @brief ESC configuration.
  */
 typedef struct esc_config {
-    const char *name;               /**< Human-readable null-terminated ESC name. */
+    const char *name;               /**< Human-readable, null-terminated name of the ESC. */
     pin_t pin;                      /**< ESC pin connection. */
     mcpwm_cmpr_handle_t comparator; /**< ESC MCPWM comparator handle. */
 } esc_config_t;

@@ -67,7 +67,7 @@ typedef enum led {
  * @brief LED configuration.
  */
 typedef struct led_config {
-    const char *name;               /**< Human-readable null-terminated LED name.*/
+    const char *name;               /**< Human-readable, null-terminated name of the LED.*/
     led_brightness_t brightness;    /**< LED brightness in percentage. */
     led_color_t color;              /**< LED RGB color. */
     led_state_t state;              /**< LED operation state. */

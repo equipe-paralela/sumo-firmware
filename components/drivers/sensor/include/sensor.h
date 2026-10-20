@@ -41,7 +41,7 @@ typedef enum sensor_mode {
  * @brief Sensor configuration.
  */
 typedef struct sensor_config {
-    const char *name;       /**< Human-readable null-terminated Sensor name. */
+    const char *name;       /**< Human-readable, null-terminated name of the sensor. */
     mux_channel_t channel;  /**< Sensor MUX channel. */
     sensor_mode_t mode;     /**< Sensor operating mode. */
     float threshold;        /**< Sensor @ref SENSOR_MODE_DIGITAL high threshold. */
