@@ -52,31 +52,21 @@ static uint8_t led_brightness_rescale(led_brightness_t brightness) {
  * @brief Refreshes all LEDs on strip.
  */
 static void led_refresh(void) {
-    esp_err_t ret;
-
     for (uint8_t i = 0; i < NUMBER_OF_LEDS; i++) {
         led_config_t led = led_array.leds[i];
 
-        ret = led_strip_set_pixel(
-            led_array.strip,
-            i,
-            (colors[led.color].r * led_brightness_rescale(led.brightness)) >> 8,
-            (colors[led.color].g * led_brightness_rescale(led.brightness)) >> 8,
-            (colors[led.color].b * led_brightness_rescale(led.brightness)) >> 8
+        ESP_ERROR_CHECK_WITHOUT_ABORT(
+            led_strip_set_pixel(
+                led_array.strip,
+                i,
+                (colors[led.color].r * led_brightness_rescale(led.brightness)) >> 8,
+                (colors[led.color].g * led_brightness_rescale(led.brightness)) >> 8,
+                (colors[led.color].b * led_brightness_rescale(led.brightness)) >> 8
+            )
         );
-        if (ret != ESP_OK) {
-            LOG_E(
-                "%s refresh failed with error %s.",
-                led_get_name(i),
-                esp_err_to_name(ret)
-            );
-        };
     };
 
-    ret = led_strip_refresh(led_array.strip);
-    if (ret != ESP_OK) {
-        LOG_E("LED refresh failed with error %s.", esp_err_to_name(ret));
-    };
+    ESP_ERROR_CHECK_WITHOUT_ABORT(led_strip_refresh(led_array.strip));
 }
 
 const char *led_get_array_name() {
@@ -92,8 +82,6 @@ const char *led_get_name(led_t led) {
 }
 
 void led_init(void) {
-    esp_err_t ret;
-
     for (uint8_t i = 0; i < NUMBER_OF_LEDS; i++) {
         led_config_t *led = &led_array.leds[i];
 
@@ -115,21 +103,13 @@ void led_init(void) {
         .resolution_hz  = LED_RESOLUTION_HZ,
         .flags.with_dma = false,
     };
-
-    ret = led_strip_new_rmt_device(
-        &strip_config, &rmt_config, &led_array.strip
+    ESP_ERROR_CHECK_WITHOUT_ABORT(
+        led_strip_new_rmt_device(
+            &strip_config, &rmt_config, &led_array.strip
+        )
     );
-    if (ret != ESP_OK) {
-        LOG_E(
-            "LED RMT device creation failed with error %s.",
-            esp_err_to_name(ret)
-        );
-    };
 
-    ret = led_strip_clear(led_array.strip);
-    if (ret != ESP_OK) {
-        LOG_E("LED clear failed with error %s.", esp_err_to_name(ret));
-    };
+    ESP_ERROR_CHECK_WITHOUT_ABORT(led_strip_clear(led_array.strip));
 
     LOG_I("%02d LEDs initialized on pin %d.", NUMBER_OF_LEDS, led_array.pin);
 }

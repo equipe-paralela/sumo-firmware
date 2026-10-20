@@ -20,8 +20,6 @@ const char *esc_get_name(esc_t esc) {
 }
 
 void esc_init() {
-    esp_err_t ret;
-
     mcpwm_timer_handle_t timer = NULL;
     mcpwm_timer_config_t timer_config = {
         .count_mode     = MCPWM_TIMER_COUNT_MODE_UP,
@@ -30,120 +28,59 @@ void esc_init() {
         .period_ticks   = ESC_PERIOD_US,
         .resolution_hz  = ESC_RESOLUTION_HZ,
     };
-    ret = mcpwm_new_timer(&timer_config, &timer);
-    if (ret != ESP_OK) {
-        LOG_E(
-            "MCPWM timer creation failed with error %s.", esp_err_to_name(ret)
-        );
-
-        return;
-    }
+    ESP_ERROR_CHECK(mcpwm_new_timer(&timer_config, &timer));
 
     mcpwm_oper_handle_t operator = NULL;
     mcpwm_operator_config_t operator_config = {
         .group_id = ESC_GROUP_ID,
     };
-    ret = mcpwm_new_operator(&operator_config, &operator);
-    if (ret != ESP_OK) {
-        LOG_E(
-            "MCPWM operator creation failed with error %s.",
-            esp_err_to_name(ret)
-        );
-
-        return;
-    }
-
-    ret = mcpwm_operator_connect_timer(operator, timer);
-    if (ret != ESP_OK) {
-        LOG_E(
-            "MCPWM timer connection to operator failed with error %s.",
-            esp_err_to_name(ret)
-        );
-
-        return;
-    }
+    ESP_ERROR_CHECK(mcpwm_new_operator(&operator_config, &operator));
+    ESP_ERROR_CHECK(mcpwm_operator_connect_timer(operator, timer));
 
     for (uint8_t i = 0; i < NUMBER_OF_ESCS; i++) {
         mcpwm_comparator_config_t comparator_config = {
             .flags.update_cmp_on_tez = true,
         };
-        ret = mcpwm_new_comparator(
-            operator, &comparator_config, &escs[i].comparator
+        ESP_ERROR_CHECK(
+            mcpwm_new_comparator(
+                operator, &comparator_config, &escs[i].comparator
+            )
         );
-        if (ret != ESP_OK) {
-            LOG_E(
-                "%s MCPWM comparator creation failed with error %s.",
-                esc_get_name(i),
-                esp_err_to_name(ret)
-            );
-
-            return;
-        }
 
         mcpwm_gen_handle_t generator = NULL;
         mcpwm_generator_config_t generator_config = {
             .gen_gpio_num = escs[i].pin,
         };
-        ret = mcpwm_new_generator(operator, &generator_config, &generator);
-        if (ret != ESP_OK) {
-            LOG_E(
-                "%s MCPWM generator creation failed with error %s",
-                esc_get_name(i),
-                esp_err_to_name(ret)
-            );
-
-            return;
-        };
-
-        ret = mcpwm_generator_set_action_on_timer_event(
-            generator,
-            MCPWM_GEN_TIMER_EVENT_ACTION(
-                MCPWM_TIMER_DIRECTION_UP,
-                MCPWM_TIMER_EVENT_EMPTY,
-                MCPWM_GEN_ACTION_HIGH
+        ESP_ERROR_CHECK(
+            mcpwm_new_generator(operator, &generator_config, &generator)
+        );
+        ESP_ERROR_CHECK(
+            mcpwm_generator_set_action_on_timer_event(
+                generator,
+                MCPWM_GEN_TIMER_EVENT_ACTION(
+                    MCPWM_TIMER_DIRECTION_UP,
+                    MCPWM_TIMER_EVENT_EMPTY,
+                    MCPWM_GEN_ACTION_HIGH
+                )
             )
         );
-        if (ret != ESP_OK) {
-            LOG_E(
-                "%s MCPWM generator set action on timer failed with error %s",
-                esc_get_name(i),
-                esp_err_to_name(ret)
-            );
+        ESP_ERROR_CHECK(
+            mcpwm_generator_set_action_on_compare_event(
+                generator,
+                MCPWM_GEN_COMPARE_EVENT_ACTION(
+                    MCPWM_TIMER_DIRECTION_UP,
+                    escs[i].comparator,
+                    MCPWM_GEN_ACTION_LOW
+                )
+            )
+        );
 
-            return;
-        };
-
-        ret = mcpwm_generator_set_action_on_compare_event(
-            generator,
-            MCPWM_GEN_COMPARE_EVENT_ACTION(
-                MCPWM_TIMER_DIRECTION_UP,
+        ESP_ERROR_CHECK(
+            mcpwm_comparator_set_compare_value(
                 escs[i].comparator,
-                MCPWM_GEN_ACTION_LOW
+                PWM_NEUTRAL_US
             )
         );
-        if (ret != ESP_OK) {
-            LOG_E(
-                "%s MCPWM generator set action on compare failed with error %s",
-                esc_get_name(i),
-                esp_err_to_name(ret)
-            );
-
-            return;
-        };
-
-        ret = mcpwm_comparator_set_compare_value(
-            escs[i].comparator,
-            PWM_NEUTRAL_US
-        );
-        if (ret != ESP_OK) {
-            LOG_E(
-                "%s compare value set failed with error %s.",
-                esc_get_name(i),
-                esp_err_to_name(ret)
-            );
-
-            return;
-        }
 
         LOG_I(
             "%s initialized on pin %02d.",
@@ -152,36 +89,18 @@ void esc_init() {
         );
     }
 
-    ret = mcpwm_timer_enable(timer);
-    if (ret != ESP_OK) {
-        LOG_E("MCPWM timer enable failed with error %s.", esp_err_to_name(ret));
-
-        return;
-    }
-
-    ret = mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP);
-    if (ret != ESP_OK) {
-        LOG_E("MCPWM timer start failed with error %s.", esp_err_to_name(ret));
-
-        return;
-    }
+    ESP_ERROR_CHECK(mcpwm_timer_enable(timer));
+    ESP_ERROR_CHECK(mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP));
 }
 
 void esc_set_pwm(esc_t esc, pwm_t pwm) {
     pwm_norm_t pwm_norm = pwm_normalize(pwm);
 
-    esp_err_t ret = mcpwm_comparator_set_compare_value(
-        escs[esc].comparator, pwm_norm
+    ESP_ERROR_CHECK(
+        mcpwm_comparator_set_compare_value(
+            escs[esc].comparator, pwm_norm
+        )
     );
-    if (ret != ESP_OK) {
-        LOG_E(
-            "%s compare value set failed with error %s.",
-            esc_get_name(esc),
-            esp_err_to_name(ret)
-        );
-
-        return;
-    }
 
     LOG_V("%s PWM set to %d us.", esc_get_name(esc), pwm_norm);
 }

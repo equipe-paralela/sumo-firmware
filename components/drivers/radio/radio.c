@@ -99,8 +99,6 @@ const char *radio_get_status_name(void) {
 }
 
 void radio_init() {
-    esp_err_t ret;
-
     ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_install_isr_service(ESP_INTR_FLAG_IRAM));
 
     int64_t now = esp_timer_get_time();
@@ -112,34 +110,15 @@ void radio_init() {
             .pull_down_en   = GPIO_PULLDOWN_DISABLE,
             .intr_type      = GPIO_INTR_ANYEDGE
         };
+        ESP_ERROR_CHECK(gpio_config(&pin_config));
 
-        ret = gpio_config(&pin_config);
-        if (ret != ESP_OK) {
-            LOG_E(
-                "%s %s GPIO configuration failed with error %s.",
-                radio_get_name(),
-                radio_get_channel_name(channel),
-                esp_err_to_name(ret)
-            );
-
-            return;
-        }
-
-        ret = gpio_isr_handler_add(
-            radio.channels[channel].pin,
-            radio_isr,
-            (void *) (uintptr_t) channel
+        ESP_ERROR_CHECK(
+            gpio_isr_handler_add(
+                radio.channels[channel].pin,
+                radio_isr,
+                (void *) (uintptr_t) channel
+            )
         );
-        if (ret != ESP_OK) {
-            LOG_E(
-                "%s %s ISR handler addition failed with error %s.",
-                radio_get_name(),
-                radio_get_channel_name(channel),
-                esp_err_to_name(ret)
-            );
-
-            return;
-        }
 
         radio.channels[channel].pwm = (pwm_t) PWM_NEUTRAL_US;
         radio.channels[channel].rise_time_us = now;
