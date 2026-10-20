@@ -1,6 +1,8 @@
 idf_component_register(
-    SRCS "radio.c"
-    INCLUDE_DIRS "include"
+    SRCS
+        "radio.c"
+    INCLUDE_DIRS
+        "include"
     REQUIRES
         esp_driver_gpio
         esp_timer
