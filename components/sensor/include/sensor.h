@@ -9,6 +9,24 @@
 #pragma once
 
 #include "mux.h"
+#include <stdbool.h>
+
+/**
+ * @brief Sensor positions.
+ */
+typedef enum sensor {
+    SENSOR_JS2_DL = 0,  /**< Obstacle sensor on the diagonal left position. */
+    SENSOR_JS2_DR,      /**< Obstacle sensor on the diagonal right position. */
+    SENSOR_JS2_FL,      /**< Obstacle sensor on the front left position. */
+    SENSOR_JS2_FR,      /**< Obstacle sensor on the front right position. */
+    SENSOR_JS2_LL,      /**< Obstacle sensor on the lateral left position. */
+    SENSOR_JS2_LR,      /**< Obstacle sensor on the lateral right position. */
+    SENSOR_QRE_BL,      /**< Line sensor on the back left position. */
+    SENSOR_QRE_BR,      /**< Line sensor on the back right position. */
+    SENSOR_QRE_FL,      /**< Line sensor on the front left position. */
+    SENSOR_QRE_FR,      /**< Line sensor on the front right position. */
+    NUMBER_OF_SENSORS   /**< Number of sensor positions. */
+} sensor_t;
 
 /**
  * @brief Sensor operating modes.
@@ -30,23 +48,6 @@ typedef struct sensor_config {
 } sensor_config_t;
 
 /**
- * @brief Sensor positions.
- */
-typedef enum sensor {
-    SENSOR_JS2_DL = 0,  /**< Obstacle sensor on the diagonal left position. */
-    SENSOR_JS2_DR,      /**< Obstacle sensor on the diagonal right position. */
-    SENSOR_JS2_FL,      /**< Obstacle sensor on the front left position. */
-    SENSOR_JS2_FR,      /**< Obstacle sensor on the front right position. */
-    SENSOR_JS2_LL,      /**< Obstacle sensor on the lateral left position. */
-    SENSOR_JS2_LR,      /**< Obstacle sensor on the lateral right position. */
-    SENSOR_QRE_BL,      /**< Line sensor on the back left position. */
-    SENSOR_QRE_BR,      /**< Line sensor on the back right position. */
-    SENSOR_QRE_FL,      /**< Line sensor on the front left position. */
-    SENSOR_QRE_FR,      /**< Line sensor on the front right position. */
-    NUMBER_OF_SENSORS   /**< Number of sensor positions. */
-} sensor_t;
-
-/**
  * @def SENSOR_MAX_VALUE
  * @brief Sensor maximum measured value.
  *
@@ -61,6 +62,76 @@ typedef enum sensor {
  * **Default Value:** 0.0000f
  */
 #define SENSOR_MIN_VALUE 0.0000f
+
+/**
+ * @brief Returns true if any line sensors are @ref SENSOR_MAX_VALUE .
+ *
+ * Line sensors are:
+ *
+ * - @ref SENSOR_QRE_BL
+ *
+ * - @ref SENSOR_QRE_BR
+ *
+ * - @ref SENSOR_QRE_FL
+ *
+ * - @ref SENSOR_QRE_FR
+ */
+bool sensor_detected_line(void);
+
+/**
+ * @brief Returns true if any front obstacle sensors are @ref SENSOR_MAX_VALUE .
+ *
+ * Front obstacle sensors are:
+ *
+ * - @ref SENSOR_JS2_FL
+ *
+ * - @ref SENSOR_JS2_FR
+ */
+bool sensor_detected_obstacle_front(void);
+
+/**
+ * @brief Returns true if both front obstacle sensors are @ref SENSOR_MIN_VALUE
+ * and any side obstacle sensors are @ref SENSOR_MAX_VALUE .
+ *
+ * Front obstacle sensors are:
+ *
+ * - @ref SENSOR_JS2_FL
+ *
+ * - @ref SENSOR_JS2_FR
+ *
+ * Side obstacle sensors are:
+ *
+ * - @ref SENSOR_JS2_DL
+ *
+ * - @ref SENSOR_JS2_DR
+ *
+ * - @ref SENSOR_JS2_LL
+ *
+ * - @ref SENSOR_JS2_LR
+ */
+bool sensor_detected_obstacle_sides(void);
+
+/**
+ * @brief Returns true if any left side obstacle sensors are @ref SENSOR_MAX_VALUE .
+ *
+ * Side obstacle sensors are:
+ *
+ * - @ref SENSOR_JS2_DL
+ *
+ * - @ref SENSOR_JS2_LL
+ */
+bool sensor_detected_obstacle_side_left(void);
+
+/**
+ * @brief Returns true if any right side obstacle sensors are @ref SENSOR_MAX_VALUE .
+ *
+ * Side obstacle sensors are:
+ *
+ * - @ref SENSOR_JS2_DR
+ *
+ * - @ref SENSOR_JS2_LR
+ */
+bool sensor_detected_obstacle_side_right(void);
 
 /**
  * @brief Returns the sensor name.
@@ -86,6 +157,18 @@ const char *sensor_get_name(sensor_t sensor);
  * @return Measured sensor value
  */
 float sensor_get_value(sensor_t sensor);
+
+/**
+ * @brief Returns the measured sensor value without treatment.
+ *
+ * The measured sensor value range between ``[0.0000, 1.0000]`` representing a
+ * percentage of the maximum 3V3 voltage supported.
+ *
+ * @param[in] sensor Sensor position.
+ *
+ * @return Measured sensor value without treatment
+ */
+float sensor_get_value_raw(sensor_t sensor);
 
 /**
  * @brief Initialize all the Sensors.

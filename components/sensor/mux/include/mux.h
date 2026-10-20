@@ -171,7 +171,7 @@ typedef struct mux {
  *
  * **Default Value:** ``1000 us``
  */
-#define MUX_TIMER_PERIOD_US 1000
+#define MUX_TIMER_PERIOD_US 200
 
 /**
  * @brief Return the Multiplexer name.

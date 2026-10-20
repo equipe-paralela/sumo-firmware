@@ -37,8 +37,8 @@ typedef enum config_control_mode {
  * Basically modifying the @ref pin enumerate.
  *
  * @note Available versions:
- * - ``CONFIG_MAINBOARD_V1``: made in Altium
  * - ``CONFIG_MAINBOARD_V2``: made in KiCAD
+ * - ``CONFIG_MAINBOARD_V1``: made in Altium
  *
  * **Default Value:** ``CONFIG_MAINBOARD_V2``
  */
