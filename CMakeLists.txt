@@ -5,6 +5,7 @@ list(APPEND EXTRA_COMPONENT_DIRS
     "components/applications"
     "components/drivers"
     "components/filters"
+    "components/project"
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
