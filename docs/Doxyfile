@@ -48,7 +48,18 @@ PROJECT_NAME           = "sumo-firmware"
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         =
+PROJECT_NUMBER  How to... Verify Locally
+------------------------
+
+It's possible to locally evaluate the behavior with the following:
+
+.. code-block:: bash
+
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+
+    npm install
+    npx dotenv-cli -e .env -- npx semantic-release --dry-run
+       =
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
