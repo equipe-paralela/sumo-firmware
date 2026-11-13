@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <stdint.h>
 #include "pwm.h"
 #include "pinout.h"
 
@@ -26,6 +25,20 @@ typedef enum radio_channel {
 } radio_channel_t;
 
 /**
+ * @brief Radio models.
+ *
+ * Each model is named following the convention: ``RADIO_MODEL_<BRAND>_<NAME>``.
+ *
+ * @note ``BRAND`` will be abbreviated with 2 letters and ``NAME`` will **not**
+ * be abbreviated.
+ */
+typedef enum radio_model {
+    RADIO_MODEL_FS_GT2B = 0,    /**< Radio Fly-Sky FS-GT2B. */
+    RADIO_MODEL_RM_POCKET,      /**< Radio RadioMaster Pocket. */
+    NUMBER_OF_RADIO_MODELS,     /**< Number of radio models. */
+} radio_model_t;
+
+/**
  * @brief Radio connection status.
  */
 typedef enum radio_status {
@@ -37,23 +50,31 @@ typedef enum radio_status {
 /**
  * @brief Radio channel configuration.
  */
-typedef struct radio_config {
+typedef struct radio_channel_config {
     const char *name;       /**< Human-readable, null-terminated name of the channel. */
     pin_t pin;              /**< Channel pin. */
     pwm_norm_t pwm;         /**< Latest normalized PWM pulse width capture via interruptions. */
     int64_t rise_time_us;   /**< Last rising time in microseconds. */
     int64_t last_time_us;   /**< Last update time in microseconds. */
-} radio_config_t;
+} radio_channel_config_t;
 
 /**
- * @brief Radio receiver.
+ * @brief Radio model configuration.
  */
-typedef struct radio {
-    const char *name;                                   /**< Human-readable, null-terminated name of the radio. */
-    radio_config_t channels[NUMBER_OF_RADIO_CHANNELS];  /**< Channels configurations. */
-    radio_status_t status;                              /**< Current connection status. */
-    const char *status_names[NUMBER_OF_RADIO_STATUS];   /**< Array of human-readable, null-terminated names of the radio status. */
-} radio_t;
+typedef struct radio_model_config {
+    const char *name;                                           /**< Human-readable, null-terminated name of the radio. */
+    radio_channel_config_t channels[NUMBER_OF_RADIO_CHANNELS];  /**< Channels configurations. */
+} radio_model_config_t;
+
+/**
+ * @brief Radio handler.
+ */
+typedef struct radio_handler {
+    radio_model_t model;                                    /**< Current model. */
+    radio_model_config_t models[NUMBER_OF_RADIO_MODELS];    /**< Models configurations. */
+    radio_status_t status;                                  /**< Current connection status. */
+    const char *status_names[NUMBER_OF_RADIO_STATUS];       /**< Array of human-readable, null-terminated names of the radio status. */
+} radio_handler_t;
 
 /**
  * @def RADIO_TIMEOUT_US
@@ -67,8 +88,16 @@ typedef struct radio {
  * @brief Returns the current radio channel name.
  *
  * @return Human-readable null-terminated string representing the channel name.
+ * @retval "NULL" If channel is invalid.
  */
 const char *radio_get_channel_name(radio_channel_t channel);
+
+/**
+ * @brief Returns the current radio model.
+ *
+ * @return Current radio model.
+ */
+radio_model_t radio_get_model(void);
 
 /**
  * @brief Returns the current radio name.
@@ -107,6 +136,7 @@ void radio_init(void);
  * @param[in] channel Radio channel.
  *
  * @return Normalized pulse width in microseconds.
+ * @retval ``PWM_NEUTRAL_US`` If channel is invalid.
  */
 pwm_norm_t radio_read_channel(radio_channel_t channel);
 
@@ -120,3 +150,12 @@ pwm_norm_t radio_read_channel(radio_channel_t channel);
  * @return Normalized array of pulses width in microseconds.
  */
 void radio_read_channels(pwm_norm_t *pwms);
+
+/**
+ * @brief Set current radio model.
+ *
+ * @param[in] model Desired radio model.
+ *
+ * @note If model is invalid, the current model is not changed.
+ */
+void radio_set_model(radio_model_t model);

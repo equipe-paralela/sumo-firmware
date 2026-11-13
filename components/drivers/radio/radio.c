@@ -9,21 +9,43 @@
 #include "radio.h"
 #include "soc/gpio_reg.h"
 
-static volatile radio_t radio = {
-    .name = "FS-GT2",
-    .channels = {
-        [RADIO_CHANNEL_1] = { .name = "STEERING",   .pin = PIN_RC_CH1 },
-        [RADIO_CHANNEL_2] = { .name = "THROTTLE",   .pin = PIN_RC_CH2 },
-        [RADIO_CHANNEL_3] = { .name = "BUTTON",     .pin = PIN_RC_CH3 },
-        [RADIO_CHANNEL_4] = { .name = "CHANNEL_4",  .pin = PIN_RC_CH4 },
-        [RADIO_CHANNEL_5] = { .name = "CHANNEL_5",  .pin = PIN_RC_CH5 },
-        [RADIO_CHANNEL_6] = { .name = "CHANNEL_6",  .pin = PIN_RC_CH6 },
+static volatile radio_handler_t radio_handler = {
+    .model  = RADIO_MODEL_RM_POCKET,
+    .models = {
+        [RADIO_MODEL_FS_GT2B] = {
+            .name       = "FlySky GT2B",
+            .channels   = {
+                [RADIO_CHANNEL_1] = { .name = "STEERING",  .pin = PIN_RC_CH1 },
+                [RADIO_CHANNEL_2] = { .name = "THROTTLE",  .pin = PIN_RC_CH2 },
+                [RADIO_CHANNEL_3] = { .name = "BUTTON",    .pin = PIN_RC_CH3 },
+            },
+        },
+        [RADIO_MODEL_RM_POCKET] = {
+            .name       = "RadioMaster Pocket",
+            .channels   = {
+                [RADIO_CHANNEL_1] = { .name = "THROTTLE",  .pin = PIN_RC_CH1 },
+                [RADIO_CHANNEL_2] = { .name = "STEERING",  .pin = PIN_RC_CH2 },
+                [RADIO_CHANNEL_3] = { .name = "FAIL_SAFE", .pin = PIN_RC_CH3 },
+                [RADIO_CHANNEL_4] = { .name = "CHANNEL_4", .pin = PIN_RC_CH4 },
+                [RADIO_CHANNEL_5] = { .name = "CHANNEL_5", .pin = PIN_RC_CH5 },
+                [RADIO_CHANNEL_6] = { .name = "CHANNEL_6", .pin = PIN_RC_CH6 },
+            },
+        },
     },
     .status_names = {
         [RADIO_STATUS_CONNECTED]    = "CONNECTED",
         [RADIO_STATUS_DISCONNECTED] = "DISCONNECTED",
     }
 };
+
+/**
+ * @brief Returns the current radio model configuration reference.
+ *
+ * @return Current radio model configuration pointer.
+ */
+static volatile radio_model_config_t *radio_get_model_config(void) {
+    return &radio_handler.models[radio_get_model()];
+}
 
 /**
  * @brief GPIO Interrupt Service Routine for the radio PWM pulse capture.
@@ -40,41 +62,58 @@ static volatile radio_t radio = {
  */
 static void IRAM_ATTR radio_isr(void *arg) {
     radio_channel_t channel = (radio_channel_t) (uintptr_t) arg;
+    volatile radio_model_config_t *radio = radio_get_model_config();
 
     uint32_t level = (
-        REG_READ(GPIO_IN1_REG) >> (radio.channels[channel].pin - 32)
+        REG_READ(GPIO_IN1_REG) >> (radio->channels[channel].pin - 32)
     ) & 0x1;
 
     int64_t now = esp_timer_get_time();
     if (level) { // rising  edge
-        radio.channels[channel].rise_time_us = now;
+        radio->channels[channel].rise_time_us = now;
     } else {     // falling edge
-        if (radio.channels[channel].rise_time_us != 0) {
-            pwm_t pwm = (pwm_t) (now - radio.channels[channel].rise_time_us);
+        if (radio->channels[channel].rise_time_us != 0) {
+            pwm_t pwm = (pwm_t) (now - radio->channels[channel].rise_time_us);
 
-            radio.channels[channel].pwm = pwm_normalize(pwm);
-            radio.channels[channel].last_time_us = now;
+            radio->channels[channel].pwm = pwm_normalize(pwm);
+            radio->channels[channel].last_time_us = now;
         }
     }
 }
 
 const char *radio_get_channel_name(radio_channel_t channel) {
-    return radio.channels[channel].name;
+    if (channel >= NUMBER_OF_RADIO_CHANNELS) {
+        LOG_E("invalid channel for %d", channel);
+
+        return "NULL";
+    };
+
+    volatile radio_model_config_t *radio = radio_get_model_config();
+
+    return radio->channels[channel].name;
+}
+
+radio_model_t radio_get_model(void) {
+    return radio_handler.model;
 }
 
 const char *radio_get_name(void) {
-    return radio.name;
+    volatile radio_model_config_t *radio = radio_get_model_config();
+
+    return radio->name;
 }
 
 radio_status_t radio_get_status() {
+    volatile radio_model_config_t *radio = radio_get_model_config();
+
     portDISABLE_INTERRUPTS();
     int64_t now = esp_timer_get_time();
 
     bool steering_dead = (
-        now - radio.channels[RADIO_CHANNEL_1].last_time_us
+        now - radio->channels[RADIO_CHANNEL_1].last_time_us
     ) > RADIO_TIMEOUT_US;
     bool throttle_dead = (
-        now - radio.channels[RADIO_CHANNEL_2].last_time_us
+        now - radio->channels[RADIO_CHANNEL_2].last_time_us
     ) > RADIO_TIMEOUT_US;
     portENABLE_INTERRUPTS();
 
@@ -85,26 +124,28 @@ radio_status_t radio_get_status() {
         new_status = RADIO_STATUS_CONNECTED;
     }
 
-    if (new_status != radio.status) {
-        radio.status = new_status;
+    if (new_status != radio_handler.status) {
+        radio_handler.status = new_status;
 
         LOG_W("%s radio %s", radio_get_name(), radio_get_status_name());
     }
 
-    return radio.status;
+    return radio_handler.status;
 }
 
 const char *radio_get_status_name(void) {
-    return radio.status_names[radio.status];
+    return radio_handler.status_names[radio_handler.status];
 }
 
 void radio_init() {
     ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_install_isr_service(ESP_INTR_FLAG_IRAM));
 
+    volatile radio_model_config_t *radio = radio_get_model_config();
+
     int64_t now = esp_timer_get_time();
     for (uint8_t channel = 0; channel < NUMBER_OF_RADIO_CHANNELS; channel++) {
         gpio_config_t pin_config = {
-            .pin_bit_mask   = (1ULL << radio.channels[channel].pin),
+            .pin_bit_mask   = (1ULL << radio->channels[channel].pin),
             .mode           = GPIO_MODE_INPUT,
             .pull_up_en     = GPIO_PULLUP_DISABLE,
             .pull_down_en   = GPIO_PULLDOWN_DISABLE,
@@ -114,48 +155,68 @@ void radio_init() {
 
         ESP_ERROR_CHECK(
             gpio_isr_handler_add(
-                radio.channels[channel].pin,
+                radio->channels[channel].pin,
                 radio_isr,
                 (void *) (uintptr_t) channel
             )
         );
 
-        radio.channels[channel].pwm = (pwm_t) PWM_NEUTRAL_US;
-        radio.channels[channel].rise_time_us = now;
-        radio.channels[channel].last_time_us = now;
+        radio->channels[channel].pwm = (pwm_t) PWM_NEUTRAL_US;
+        radio->channels[channel].rise_time_us = now;
+        radio->channels[channel].last_time_us = now;
 
         LOG_I(
             "%s %s initialized on pin %02d.",
             radio_get_name(),
             radio_get_channel_name(channel),
-            radio.channels[channel].pin
+            radio->channels[channel].pin
         );
     }
 
-    radio.status = RADIO_STATUS_DISCONNECTED;
+    radio_handler.status = RADIO_STATUS_DISCONNECTED;
 }
 
 pwm_norm_t radio_read_channel(radio_channel_t channel) {
+    if (channel >= NUMBER_OF_RADIO_CHANNELS) {
+        LOG_E("invalid channel for %d", channel);
+
+        return PWM_NEUTRAL_US;
+    };
+
+    volatile radio_model_config_t *radio = radio_get_model_config();
+
     pwm_norm_t pwm;
 
     portDISABLE_INTERRUPTS();
-    pwm = radio.channels[channel].pwm;
+    pwm = radio->channels[channel].pwm;
     portENABLE_INTERRUPTS();
 
     LOG_V(
         "%s %s PWM is %04d us.",
         radio_get_name(),
         radio_get_channel_name(channel),
-        radio.channels[channel].pwm
+        radio->channels[channel].pwm
     );
 
     return pwm;
 }
 
 void radio_read_channels(pwm_norm_t *pwms) {
+    volatile radio_model_config_t *radio = radio_get_model_config();
+
     portDISABLE_INTERRUPTS();
     for (uint8_t channel = 0; channel < NUMBER_OF_RADIO_CHANNELS; channel++) {
-        pwms[channel] = radio.channels[channel].pwm;
+        pwms[channel] = radio->channels[channel].pwm;
     }
     portENABLE_INTERRUPTS();
+}
+
+void radio_set_model(radio_model_t model) {
+    if (model >= NUMBER_OF_RADIO_MODELS) {
+        LOG_E("invalid model for %d", model);
+
+        return;
+    };
+
+    radio_handler.model = model;
 }
