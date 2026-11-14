@@ -105,6 +105,7 @@ static volatile radio_model_config_t *radio_get_model_config(void) {
  */
 static void IRAM_ATTR radio_isr(void *arg) {
     radio_channel_t channel = (radio_channel_t) (uintptr_t) arg;
+
     volatile radio_model_config_t *radio = radio_get_model_config();
 
     uint32_t level = (
@@ -122,6 +123,31 @@ static void IRAM_ATTR radio_isr(void *arg) {
             radio->channels[channel].last_time_us = now;
         }
     }
+}
+
+void radio_deinit(void) {
+    volatile radio_model_config_t *radio = radio_get_model_config();
+
+    for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
+        volatile radio_channel_config_t *channel = &radio->channels[i];
+
+        if (channel == NULL) {
+            break;
+        }
+
+        ESP_ERROR_CHECK(gpio_isr_handler_remove(channel->pin));
+
+        ESP_ERROR_CHECK(gpio_reset_pin(channel->pin));
+
+        LOG_I(
+            "%s %s deinit on pin %02d.",
+            radio_get_name(),
+            radio_get_channel_name(i),
+            channel->pin
+        );
+    }
+
+    radio_handler.status = RADIO_STATUS_DISCONNECTED;
 }
 
 const char *radio_get_channel_name(radio_channel_t channel) {
@@ -266,13 +292,6 @@ pwm_norm_t radio_read_channel(radio_channel_t channel) {
     pwm = radio->channels[channel].pwm;
     portENABLE_INTERRUPTS();
 
-    LOG_V(
-        "%s %s PWM is %04d us.",
-        radio_get_name(),
-        radio_get_channel_name(channel),
-        radio->channels[channel].pwm
-    );
-
     return pwm;
 }
 
@@ -293,5 +312,9 @@ void radio_set_model(radio_model_t model) {
         return;
     };
 
+    radio_deinit();
+
     radio_handler.model = model;
+
+    radio_init();
 }

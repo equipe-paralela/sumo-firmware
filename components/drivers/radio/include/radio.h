@@ -105,6 +105,11 @@ typedef struct radio_handler {
 #define RADIO_TIMEOUT_US 25000
 
 /**
+ * @brief Deinitialize radio channels GPIOs and interrupts.
+ */
+void radio_deinit(void);
+
+/**
  * @brief Returns the current radio channel name.
  *
  * @return Human-readable null-terminated string representing the channel name.
@@ -141,7 +146,7 @@ radio_status_t radio_get_status(void);
 const char *radio_get_status_name(void);
 
 /**
- * @brief Initialize radio interrupts.
+ * @brief Initialize radio channels GPIOs and interrupts.
  *
  * @note After initialization, channels start at @ref PWM_NEUTRAL_US until
  * pulses are received.
