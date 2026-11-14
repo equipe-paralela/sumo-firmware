@@ -400,7 +400,7 @@ static void opening_release(void) {
             break;
 
         case CONFIG_CONTROL_RADIO:
-            pwm_norm_t button = radio_read_channel(RADIO_CHANNEL_3);
+            pwm_norm_t button = radio_read_channel(RADIO_CHANNEL_BUTTON);
 
             if (opening.last_button != button) {
                 opening.state = OPENING_STATE_EXECUTION;
@@ -420,8 +420,8 @@ static void opening_release(void) {
  * - ``FS-GT2``: iterative measures of a single radio receiver channel.
  */
 static void opening_selection(void) {
-    pwm_norm_t button   = radio_read_channel(RADIO_CHANNEL_3);
-    pwm_norm_t throttle = radio_read_channel(RADIO_CHANNEL_2);
+    pwm_norm_t button   = radio_read_channel(RADIO_CHANNEL_BUTTON);
+    pwm_norm_t throttle = radio_read_channel(RADIO_CHANNEL_THROTTLE);
 
     // ensure initial button value is not PWM_NEUTRAL_US
     if (
@@ -457,7 +457,7 @@ static void opening_selection(void) {
 void opening_entry(void) {
     controller_stop();
 
-    opening.last_button = radio_read_channel(RADIO_CHANNEL_3);
+    opening.last_button = radio_read_channel(RADIO_CHANNEL_BUTTON);
 
 }
 

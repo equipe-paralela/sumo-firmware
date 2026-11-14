@@ -15,62 +15,63 @@ static volatile radio_handler_t radio_handler = {
         [RADIO_MODEL_FS_GT2B] = {
             .name       = "FlySky GT2B",
             .channels   = {
-                [RADIO_CHANNEL_1] = {
-                    .failsafe   = {
-                        .trigger    = RADIO_FAILSAFE_TIMEOUT,
-                        .timeout_us = RADIO_TIMEOUT_US,
-                    },
-                    .name       = "STEERING",
-                    .pin        = PIN_RC_CH1
-                },
-                [RADIO_CHANNEL_2] = {
-                    .failsafe   = {
-                        .trigger    = RADIO_FAILSAFE_TIMEOUT,
-                        .timeout_us = RADIO_TIMEOUT_US,
-                    },
-                    .name   = "THROTTLE",
-                    .pin    = PIN_RC_CH2
-                },
-                [RADIO_CHANNEL_3] = {
+                [RADIO_CHANNEL_BUTTON] = {
+                    .name       = "BUTTON",
+                    .pin        = PIN_RC_CH3,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_DISABLE,
                     },
-                    .name   = "BUTTON",
-                    .pin    = PIN_RC_CH3
+                },
+                [RADIO_CHANNEL_STEERING] = {
+                    .name       = "STEERING",
+                    .pin        = PIN_RC_CH1,
+                    .failsafe   = {
+                        .trigger    = RADIO_FAILSAFE_TIMEOUT,
+                        .timeout_us = RADIO_TIMEOUT_US,
+                    },
+                },
+                [RADIO_CHANNEL_THROTTLE] = {
+                    .name       = "THROTTLE",
+                    .pin        = PIN_RC_CH2,
+                    .failsafe   = {
+                        .trigger    = RADIO_FAILSAFE_TIMEOUT,
+                        .timeout_us = RADIO_TIMEOUT_US,
+                    },
                 },
             },
         },
         [RADIO_MODEL_RM_POCKET] = {
             .name       = "RadioMaster Pocket",
             .channels   = {
-                [RADIO_CHANNEL_1] = {
+                [RADIO_CHANNEL_FAILSAFE] = {
+                    .name       = "FAIL_SAFE",
+                    .pin        = PIN_RC_CH1,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_PWM_VALUE,
                         .pwm        = PWM_MINIMUM_US
                     },
-                    .name   = "FAIL_SAFE",
-                    .pin    = PIN_RC_CH1
                 },
-                [RADIO_CHANNEL_2] = {
+                [RADIO_CHANNEL_BUTTON] = {
+                    .name       = "BUTTON",
+                    .pin        = PIN_RC_CH4,
+                    .failsafe   = {
+                        .trigger    = RADIO_FAILSAFE_DISABLE,
+                    },
+                },
+                [RADIO_CHANNEL_STEERING] = {
+                    .name       = "STEERING",
+                    .pin        = PIN_RC_CH3,
+                    .failsafe   = {
+                        .trigger    = RADIO_FAILSAFE_DISABLE,
+                    },
+                },
+                [RADIO_CHANNEL_THROTTLE] = {
+                    .name       = "THROTTLE",
+                    .pin        = PIN_RC_CH2,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_DISABLE
                     },
-                    .name   = "THROTTLE",
-                    .pin    = PIN_RC_CH2
                 },
-                [RADIO_CHANNEL_3] = {
-                    .failsafe   = {
-                        .trigger    = RADIO_FAILSAFE_DISABLE,
-                    },
-                    .name   = "STEERING",
-                    .pin    = PIN_RC_CH3
-                },
-                [RADIO_CHANNEL_4] = {
-                    .failsafe   = {
-                        .trigger    = RADIO_FAILSAFE_DISABLE,
-                    },
-                    .name   = "CHANNEL_4",
-                    .pin    = PIN_RC_CH4
                 },
             },
         },
@@ -175,12 +176,13 @@ const char *radio_get_name(void) {
 radio_status_t radio_get_status(void) {
     volatile radio_model_config_t *radio = radio_get_model_config();
 
-    portDISABLE_INTERRUPTS();
     int64_t now = esp_timer_get_time();
 
     bool channel_failsafe;
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
+        portDISABLE_INTERRUPTS();
         volatile radio_channel_config_t *channel = &radio->channels[i];
+        portENABLE_INTERRUPTS();
 
         if (channel == NULL) {
             break;
@@ -216,7 +218,6 @@ radio_status_t radio_get_status(void) {
             break;
         }
     }
-    portENABLE_INTERRUPTS();
 
     radio_status_t new_status;
     if (channel_failsafe) {
@@ -304,9 +305,10 @@ pwm_norm_t radio_read_channel(radio_channel_t channel) {
 void radio_read_channels(pwm_norm_t *pwms) {
     volatile radio_model_config_t *radio = radio_get_model_config();
 
-    portDISABLE_INTERRUPTS();
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
+        portDISABLE_INTERRUPTS();
         volatile radio_channel_config_t *channel = &radio->channels[i];
+        portENABLE_INTERRUPTS();
 
         if (channel == NULL) {
             break;
@@ -314,7 +316,6 @@ void radio_read_channels(pwm_norm_t *pwms) {
 
         pwms[i] = channel->pwm;
     }
-    portENABLE_INTERRUPTS();
 }
 
 void radio_set_model(radio_model_t model) {

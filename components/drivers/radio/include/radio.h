@@ -15,10 +15,10 @@
  * @brief Radio channels.
  */
 typedef enum radio_channel {
-    RADIO_CHANNEL_1 = 0,        /**< Radio channel 1. */
-    RADIO_CHANNEL_2,            /**< Radio channel 2. */
-    RADIO_CHANNEL_3,            /**< Radio channel 3. */
-    RADIO_CHANNEL_4,            /**< Radio channel 4. */
+    RADIO_CHANNEL_FAILSAFE = 0, /**< Radio channel for fail-safe. */
+    RADIO_CHANNEL_BUTTON,       /**< Radio channel for button. */
+    RADIO_CHANNEL_STEERING,     /**< Radio channel for sterring. */
+    RADIO_CHANNEL_THROTTLE,     /**< Radio channel for throttle. */
     RADIO_CHANNEL_5,            /**< Radio channel 5. */
     RADIO_CHANNEL_6,            /**< Radio channel 6. */
     NUMBER_OF_RADIO_CHANNELS    /**< Number of radio channels. */
