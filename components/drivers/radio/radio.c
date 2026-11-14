@@ -238,15 +238,21 @@ const char *radio_get_status_name(void) {
     return radio_handler.status_names[radio_handler.status];
 }
 
-void radio_init() {
+void radio_init(void) {
     ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_install_isr_service(ESP_INTR_FLAG_IRAM));
 
     volatile radio_model_config_t *radio = radio_get_model_config();
 
     int64_t now = esp_timer_get_time();
-    for (uint8_t channel = 0; channel < NUMBER_OF_RADIO_CHANNELS; channel++) {
+    for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
+        volatile radio_channel_config_t *channel = &radio->channels[i];
+
+        if (channel == NULL) {
+            break;
+        }
+
         gpio_config_t pin_config = {
-            .pin_bit_mask   = (1ULL << radio->channels[channel].pin),
+            .pin_bit_mask   = (1ULL << channel->pin),
             .mode           = GPIO_MODE_INPUT,
             .pull_up_en     = GPIO_PULLUP_DISABLE,
             .pull_down_en   = GPIO_PULLDOWN_DISABLE,
@@ -256,21 +262,21 @@ void radio_init() {
 
         ESP_ERROR_CHECK(
             gpio_isr_handler_add(
-                radio->channels[channel].pin,
+                channel->pin,
                 radio_isr,
-                (void *) (uintptr_t) channel
+                (void *) (uintptr_t) i
             )
         );
 
-        radio->channels[channel].pwm = (pwm_t) PWM_NEUTRAL_US;
-        radio->channels[channel].rise_time_us = now;
-        radio->channels[channel].last_time_us = now;
+        channel->pwm = (pwm_t) PWM_NEUTRAL_US;
+        channel->rise_time_us = now;
+        channel->last_time_us = now;
 
         LOG_I(
             "%s %s initialized on pin %02d.",
             radio_get_name(),
-            radio_get_channel_name(channel),
-            radio->channels[channel].pin
+            radio_get_channel_name(i),
+            channel->pin
         );
     }
 
@@ -299,8 +305,14 @@ void radio_read_channels(pwm_norm_t *pwms) {
     volatile radio_model_config_t *radio = radio_get_model_config();
 
     portDISABLE_INTERRUPTS();
-    for (uint8_t channel = 0; channel < NUMBER_OF_RADIO_CHANNELS; channel++) {
-        pwms[channel] = radio->channels[channel].pwm;
+    for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
+        volatile radio_channel_config_t *channel = &radio->channels[i];
+
+        if (channel == NULL) {
+            break;
+        }
+
+        pwms[i] = channel->pwm;
     }
     portENABLE_INTERRUPTS();
 }
