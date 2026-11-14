@@ -15,20 +15,63 @@ static volatile radio_handler_t radio_handler = {
         [RADIO_MODEL_FS_GT2B] = {
             .name       = "FlySky GT2B",
             .channels   = {
-                [RADIO_CHANNEL_1] = { .name = "STEERING",  .pin = PIN_RC_CH1 },
-                [RADIO_CHANNEL_2] = { .name = "THROTTLE",  .pin = PIN_RC_CH2 },
-                [RADIO_CHANNEL_3] = { .name = "BUTTON",    .pin = PIN_RC_CH3 },
+                [RADIO_CHANNEL_1] = {
+                    .failsafe   = {
+                        .trigger    = RADIO_FAILSAFE_TIMEOUT,
+                        .timeout_us = RADIO_TIMEOUT_US,
+                    },
+                    .name       = "STEERING",
+                    .pin        = PIN_RC_CH1
+                },
+                [RADIO_CHANNEL_2] = {
+                    .failsafe   = {
+                        .trigger    = RADIO_FAILSAFE_TIMEOUT,
+                        .timeout_us = RADIO_TIMEOUT_US,
+                    },
+                    .name   = "THROTTLE",
+                    .pin    = PIN_RC_CH2
+                },
+                [RADIO_CHANNEL_3] = {
+                    .failsafe   = {
+                        .trigger    = RADIO_FAILSAFE_DISABLE,
+                    },
+                    .name   = "BUTTON",
+                    .pin    = PIN_RC_CH3
+                },
             },
         },
         [RADIO_MODEL_RM_POCKET] = {
             .name       = "RadioMaster Pocket",
             .channels   = {
-                [RADIO_CHANNEL_1] = { .name = "THROTTLE",  .pin = PIN_RC_CH1 },
-                [RADIO_CHANNEL_2] = { .name = "STEERING",  .pin = PIN_RC_CH2 },
-                [RADIO_CHANNEL_3] = { .name = "FAIL_SAFE", .pin = PIN_RC_CH3 },
-                [RADIO_CHANNEL_4] = { .name = "CHANNEL_4", .pin = PIN_RC_CH4 },
-                [RADIO_CHANNEL_5] = { .name = "CHANNEL_5", .pin = PIN_RC_CH5 },
-                [RADIO_CHANNEL_6] = { .name = "CHANNEL_6", .pin = PIN_RC_CH6 },
+                [RADIO_CHANNEL_1] = {
+                    .failsafe   = {
+                        .trigger    = RADIO_FAILSAFE_PWM_VALUE,
+                        .pwm        = PWM_MINIMUM_US
+                    },
+                    .name   = "FAIL_SAFE",
+                    .pin    = PIN_RC_CH1
+                },
+                [RADIO_CHANNEL_2] = {
+                    .failsafe   = {
+                        .trigger    = RADIO_FAILSAFE_DISABLE
+                    },
+                    .name   = "THROTTLE",
+                    .pin    = PIN_RC_CH2
+                },
+                [RADIO_CHANNEL_3] = {
+                    .failsafe   = {
+                        .trigger    = RADIO_FAILSAFE_DISABLE,
+                    },
+                    .name   = "STEERING",
+                    .pin    = PIN_RC_CH3
+                },
+                [RADIO_CHANNEL_4] = {
+                    .failsafe   = {
+                        .trigger    = RADIO_FAILSAFE_DISABLE,
+                    },
+                    .name   = "CHANNEL_4",
+                    .pin    = PIN_RC_CH4
+                },
             },
         },
     },
@@ -103,22 +146,54 @@ const char *radio_get_name(void) {
     return radio->name;
 }
 
-radio_status_t radio_get_status() {
+radio_status_t radio_get_status(void) {
     volatile radio_model_config_t *radio = radio_get_model_config();
 
     portDISABLE_INTERRUPTS();
     int64_t now = esp_timer_get_time();
 
-    bool steering_dead = (
-        now - radio->channels[RADIO_CHANNEL_1].last_time_us
-    ) > RADIO_TIMEOUT_US;
-    bool throttle_dead = (
-        now - radio->channels[RADIO_CHANNEL_2].last_time_us
-    ) > RADIO_TIMEOUT_US;
+    bool channel_failsafe;
+    for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
+        volatile radio_channel_config_t *channel = &radio->channels[i];
+
+        if (channel == NULL) {
+            break;
+        }
+
+        switch (channel->failsafe.trigger) {
+            case RADIO_FAILSAFE_DISABLE:
+                channel_failsafe = false;
+                break;
+
+            case RADIO_FAILSAFE_PWM_VALUE:
+                channel_failsafe = (
+                    channel->pwm == channel->failsafe.pwm
+                );
+                break;
+
+            case RADIO_FAILSAFE_TIMEOUT:
+                channel_failsafe = (
+                    now - channel->last_time_us
+                ) > channel->failsafe.timeout_us;
+                break;
+
+            default:
+                channel_failsafe = false;
+                LOG_E(
+                    "Fail-Safe triggering condition %d not recognized",
+                    channel->failsafe.trigger
+                );
+                break;
+        }
+
+        if (channel_failsafe) {
+            break;
+        }
+    }
     portENABLE_INTERRUPTS();
 
     radio_status_t new_status;
-    if (steering_dead || throttle_dead) {
+    if (channel_failsafe) {
         new_status = RADIO_STATUS_DISCONNECTED;
     } else {
         new_status = RADIO_STATUS_CONNECTED;

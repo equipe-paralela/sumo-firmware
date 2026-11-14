@@ -25,6 +25,16 @@ typedef enum radio_channel {
 } radio_channel_t;
 
 /**
+ * @brief Radio channel Fail-Safe triggering conditon.
+ */
+typedef enum radio_failsafe {
+    RADIO_FAILSAFE_DISABLE = 0, /**< Fail-Safe trigger disabled. */
+    RADIO_FAILSAFE_TIMEOUT,     /**< Fail-Safe triggered by timeout in microseconds. */
+    RADIO_FAILSAFE_PWM_VALUE,   /**< Fail-Safe triggered by PWM pulse in microseconds. */
+    NUMBER_OF_RADIO_FAILSAFES   /**< Number of radio Fail-Safe triggers. */
+} radio_failsafe_t;
+
+/**
  * @brief Radio models.
  *
  * Each model is named following the convention: ``RADIO_MODEL_<BRAND>_<NAME>``.
@@ -42,20 +52,30 @@ typedef enum radio_model {
  * @brief Radio connection status.
  */
 typedef enum radio_status {
-    RADIO_STATUS_DISCONNECTED = 0,  /**< All channels disconnected after timeout. */
-    RADIO_STATUS_CONNECTED,         /**< All channels receiving. */
+    RADIO_STATUS_DISCONNECTED = 0,  /**< At least one Fail-Safe condition met. */
+    RADIO_STATUS_CONNECTED,         /**< All channels not in Fail-Safe conditions. */
     NUMBER_OF_RADIO_STATUS          /**< Number of radio status. */
 } radio_status_t;
+
+/**
+ * @brief Radio channel Fail-Safe configuration.
+ */
+typedef struct radio_failsafe_config {
+    radio_failsafe_t trigger;   /**< Fail-Safe trigger condition. */
+    pwm_norm_t pwm;             /**< Fail-Safe PWM value in microseconds. */
+    int64_t timeout_us;         /**< Fail-Safe timeout in microseconds. */
+} radio_failsafe_config_t;
 
 /**
  * @brief Radio channel configuration.
  */
 typedef struct radio_channel_config {
-    const char *name;       /**< Human-readable, null-terminated name of the channel. */
-    pin_t pin;              /**< Channel pin. */
-    pwm_norm_t pwm;         /**< Latest normalized PWM pulse width capture via interruptions. */
-    int64_t rise_time_us;   /**< Last rising time in microseconds. */
-    int64_t last_time_us;   /**< Last update time in microseconds. */
+    const char *name;                   /**< Human-readable, null-terminated name of the channel. */
+    pin_t pin;                          /**< Channel pin. */
+    radio_failsafe_config_t failsafe;   /**< Fail-Safe configuration. */
+    pwm_norm_t pwm;                     /**< Latest normalized PWM pulse width capture via interruptions. */
+    int64_t rise_time_us;               /**< Last rising time in microseconds. */
+    int64_t last_time_us;               /**< Last update time in microseconds. */
 } radio_channel_config_t;
 
 /**
