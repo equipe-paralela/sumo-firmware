@@ -154,7 +154,7 @@ const char *radio_get_channel_name(radio_channel_t channel) {
     if (channel >= NUMBER_OF_RADIO_CHANNELS) {
         LOG_E("invalid channel for %d", channel);
 
-        return "NULL";
+        return NULL;
     };
 
     volatile radio_model_config_t *radio = radio_get_model_config();

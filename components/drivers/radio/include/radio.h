@@ -113,7 +113,7 @@ void radio_deinit(void);
  * @brief Returns the current radio channel name.
  *
  * @return Human-readable null-terminated string representing the channel name.
- * @retval "NULL" If channel is invalid.
+ * @retval NULL If channel is invalid.
  */
 const char *radio_get_channel_name(radio_channel_t channel);
 
@@ -161,7 +161,7 @@ void radio_init(void);
  * @param[in] channel Radio channel.
  *
  * @return Normalized pulse width in microseconds.
- * @retval ``PWM_NEUTRAL_US`` If channel is invalid.
+ * @retval PWM_NEUTRAL_US If channel is invalid.
  */
 pwm_norm_t radio_read_channel(radio_channel_t channel);
 
