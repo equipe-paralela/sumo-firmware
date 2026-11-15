@@ -131,7 +131,7 @@ static radio_model_config_t *radio_get_model_config(void) {
 static void IRAM_ATTR radio_isr(void *arg) {
     radio_channel_t channel = (radio_channel_t) (uintptr_t) arg;
 
-    radio_model_config_t *radio = radio_get_model_config();
+    radio_model_config_t *radio = &radio_handler.models[radio_handler.model];
 
     uint32_t level;
 
