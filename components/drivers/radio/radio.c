@@ -20,26 +20,29 @@ static radio_handler_t radio_handler = {
                     .enabled    = false,
                 },
                 [RADIO_CHANNEL_BUTTON] = {
-                    .enabled    = true,
-                    .name       = "BUTTON",
-                    .pin        = PIN_RC_CH3,
+                    .enabled        = true,
+                    .name           = "BUTTON",
+                    .pin            = PIN_RC_CH3,
+                    .pwm_default    = PWM_NEUTRAL_US,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_DISABLE,
                     },
                 },
                 [RADIO_CHANNEL_STEERING] = {
-                    .enabled    = true,
-                    .name       = "STEERING",
-                    .pin        = PIN_RC_CH1,
+                    .enabled        = true,
+                    .name           = "STEERING",
+                    .pin            = PIN_RC_CH1,
+                    .pwm_default    = PWM_NEUTRAL_US,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_TIMEOUT,
                         .timeout_us = RADIO_TIMEOUT_US,
                     },
                 },
                 [RADIO_CHANNEL_THROTTLE] = {
-                    .enabled    = true,
-                    .name       = "THROTTLE",
-                    .pin        = PIN_RC_CH2,
+                    .enabled        = true,
+                    .name           = "THROTTLE",
+                    .pin            = PIN_RC_CH2,
+                    .pwm_default    = PWM_NEUTRAL_US,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_TIMEOUT,
                         .timeout_us = RADIO_TIMEOUT_US,
@@ -57,34 +60,38 @@ static radio_handler_t radio_handler = {
             .name       = "RadioMaster Pocket",
             .channels   = {
                 [RADIO_CHANNEL_FAILSAFE] = {
-                    .enabled    = true,
-                    .name       = "FAIL_SAFE",
-                    .pin        = PIN_RC_CH1,
+                    .enabled        = true,
+                    .name           = "FAIL_SAFE",
+                    .pin            = PIN_RC_CH1,
+                    .pwm_default    = PWM_MINIMUM_US,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_PWM_VALUE,
                         .pwm        = PWM_MAXIMUM_US
                     },
                 },
                 [RADIO_CHANNEL_BUTTON] = {
-                    .enabled    = true,
-                    .name       = "BUTTON",
-                    .pin        = PIN_RC_CH4,
+                    .enabled        = true,
+                    .name           = "BUTTON",
+                    .pin            = PIN_RC_CH4,
+                    .pwm_default    = PWM_NEUTRAL_US,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_DISABLE,
                     },
                 },
                 [RADIO_CHANNEL_STEERING] = {
-                    .enabled    = true,
-                    .name       = "STEERING",
-                    .pin        = PIN_RC_CH3,
+                    .enabled        = true,
+                    .name           = "STEERING",
+                    .pin            = PIN_RC_CH3,
+                    .pwm_default    = PWM_NEUTRAL_US,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_DISABLE,
                     },
                 },
                 [RADIO_CHANNEL_THROTTLE] = {
-                    .enabled    = true,
-                    .name       = "THROTTLE",
-                    .pin        = PIN_RC_CH2,
+                    .enabled        = true,
+                    .name           = "THROTTLE",
+                    .pin            = PIN_RC_CH2,
+                    .pwm_default    = PWM_NEUTRAL_US,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_DISABLE
                     },
@@ -307,9 +314,9 @@ void radio_init(void) {
             )
         );
 
-        channel->pwm = (pwm_t) PWM_NEUTRAL_US;
-        channel->rise_time_us = now;
-        channel->last_time_us = now;
+        channel->pwm            = channel->pwm_default;
+        channel->rise_time_us   = now;
+        channel->last_time_us   = now;
 
         LOG_I(
             "%s %s initialized on pin %02d.",
@@ -331,13 +338,25 @@ pwm_norm_t radio_read_channel(radio_channel_t channel) {
 
     radio_model_config_t *radio = radio_get_model_config();
 
-    pwm_norm_t pwm;
     if (!radio->channels[channel].enabled) {
-        pwm = PWM_NEUTRAL_US;
-    } else {
-        portDISABLE_INTERRUPTS();
-        pwm = radio->channels[channel].pwm;
-        portENABLE_INTERRUPTS();
+        return PWM_NEUTRAL_US;
+    }
+
+    pwm_norm_t pwm;
+    switch (radio_handler.status) {
+        case RADIO_STATUS_CONNECTED:
+            portDISABLE_INTERRUPTS();
+            pwm = radio->channels[channel].pwm;
+            portENABLE_INTERRUPTS();
+            break;
+
+        case RADIO_STATUS_DISCONNECTED:
+            pwm = radio->channels[channel].pwm_default;
+            break;
+
+        default:
+            pwm = PWM_NEUTRAL_US;
+            break;
     }
 
     return pwm;
@@ -353,10 +372,24 @@ void radio_read_channels(pwm_norm_t *pwms) {
 
         if (!channel->enabled) {
             pwms[i] = PWM_NEUTRAL_US;
-        } else {
-            portDISABLE_INTERRUPTS();
-            pwms[i] = channel->pwm;
-            portENABLE_INTERRUPTS();
+
+            continue;
+        }
+
+        switch (radio_handler.status) {
+            case RADIO_STATUS_CONNECTED:
+                portDISABLE_INTERRUPTS();
+                pwms[i] = radio->channels[i].pwm;
+                portENABLE_INTERRUPTS();
+                break;
+
+            case RADIO_STATUS_DISCONNECTED:
+                pwms[i] = radio->channels[i].pwm_default;
+                break;
+
+            default:
+                pwms[i] = PWM_NEUTRAL_US;
+                break;
         }
     }
 }

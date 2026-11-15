@@ -74,7 +74,8 @@ typedef struct radio_channel_config {
     const char *name;                   /**< Human-readable, null-terminated name of the channel. */
     pin_t pin;                          /**< Channel pin. */
     radio_failsafe_config_t failsafe;   /**< Fail-Safe configuration. */
-    volatile pwm_norm_t pwm;            /**< Latest normalized PWM pulse width capture via interruptions. */
+    const pwm_norm_t pwm_default;       /**< Default normalized PWM pulse width in microseconds. */
+    volatile pwm_norm_t pwm;            /**< Latest normalized PWM pulse width in microseconds capture via interruptions. */
     volatile int64_t rise_time_us;      /**< Last rising time in microseconds. */
     volatile int64_t last_time_us;      /**< Last update time in microseconds. */
 } radio_channel_config_t;
@@ -152,8 +153,8 @@ const char *radio_get_status_name(void);
 /**
  * @brief Initialize radio channels GPIOs and interrupts.
  *
- * @note After initialization, channels start at @ref PWM_NEUTRAL_US until
- * pulses are received.
+ * @note After initialization, channels start with their pre-configured PWM
+ * initial values until pulses are received.
  */
 void radio_init(void);
 
