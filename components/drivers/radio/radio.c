@@ -365,6 +365,12 @@ pwm_norm_t radio_read_channel(radio_channel_t channel) {
 }
 
 void radio_read_channels(pwm_norm_t *pwms) {
+    if (pwms == NULL) {
+        LOG_E("Invalid output buffer");
+
+        return;
+    }
+
     radio_model_config_t *radio = radio_get_model_config();
 
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
