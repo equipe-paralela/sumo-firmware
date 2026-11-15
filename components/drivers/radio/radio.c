@@ -183,7 +183,7 @@ void radio_deinit(void) {
 }
 
 const char *radio_get_channel_name(radio_channel_t channel) {
-    if (channel >= NUMBER_OF_RADIO_CHANNELS) {
+    if ((unsigned) channel >= NUMBER_OF_RADIO_CHANNELS) {
         LOG_E("invalid channel for %d", channel);
 
         return NULL;
@@ -323,7 +323,7 @@ void radio_init(void) {
 }
 
 pwm_norm_t radio_read_channel(radio_channel_t channel) {
-    if (channel >= NUMBER_OF_RADIO_CHANNELS) {
+    if ((unsigned) channel >= NUMBER_OF_RADIO_CHANNELS) {
         LOG_E("invalid channel for %d", channel);
 
         return PWM_NEUTRAL_US;
@@ -362,7 +362,7 @@ void radio_read_channels(pwm_norm_t *pwms) {
 }
 
 void radio_set_model(radio_model_t model) {
-    if (model >= NUMBER_OF_RADIO_MODELS) {
+    if ((unsigned) model >= NUMBER_OF_RADIO_MODELS) {
         LOG_E("invalid model for %d", model);
 
         return;
