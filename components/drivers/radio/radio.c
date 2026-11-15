@@ -1,3 +1,4 @@
+#include "assert.h"
 #include "driver/gpio.h"
 #include "esp_attr.h"
 #include "esp_err.h"
@@ -157,6 +158,8 @@ void radio_deinit(void) {
             continue;
         }
 
+        assert(GPIO_IS_VALID_GPIO(channel->pin) == true);
+
         ESP_ERROR_CHECK(gpio_isr_handler_remove(channel->pin));
 
         ESP_ERROR_CHECK(gpio_reset_pin(channel->pin));
@@ -276,6 +279,8 @@ void radio_init(void) {
         if (!channel->enabled) {
             continue;
         }
+
+        assert(GPIO_IS_VALID_GPIO(channel->pin) == true);
 
         gpio_config_t pin_config = {
             .pin_bit_mask   = (1ULL << channel->pin),
