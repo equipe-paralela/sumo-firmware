@@ -123,17 +123,24 @@ static radio_model_config_t *radio_get_model_config(void) {
  *
  * @param arg Radio channel encoded as void*.
  *
- * @note GPIO level is read with direct ESP32 register access
- * ``REG_READ(GPIO_IN_REG)`` providing faster and ISR-safe input sampling.
+ * @note GPIO level is read with direct ESP32S3 register access providing faster
+ * and ISR-safe input sampling:
+ * - ``REG_READ(GPIO_IN_REG)`` for GPIOs 0 to 31
+ * - ``REG_READ(GPIO_IN1_REG)`` for GPIOs 32 to 48
  */
 static void IRAM_ATTR radio_isr(void *arg) {
     radio_channel_t channel = (radio_channel_t) (uintptr_t) arg;
 
     radio_model_config_t *radio = radio_get_model_config();
 
-    uint32_t level = (
-        REG_READ(GPIO_IN1_REG) >> (radio->channels[channel].pin - 32)
-    ) & 0x1;
+    uint32_t level;
+
+    pin_t pin = radio->channels[channel].pin;
+    if (pin < 32) {
+        level = (REG_READ(GPIO_IN_REG)  >> (pin -  0U)) & 0x1U;
+    } else {
+        level = (REG_READ(GPIO_IN1_REG) >> (pin - 32U)) & 0x1U;
+    }
 
     int64_t now = esp_timer_get_time();
     if (level) { // rising  edge
