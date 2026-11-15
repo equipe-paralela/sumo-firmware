@@ -10,7 +10,7 @@
 #include "radio.h"
 #include "soc/gpio_reg.h"
 
-static volatile radio_handler_t radio_handler = {
+static radio_handler_t radio_handler = {
     .model  = RADIO_MODEL_RM_POCKET,
     .models = {
         [RADIO_MODEL_FS_GT2B] = {
@@ -109,7 +109,7 @@ static volatile radio_handler_t radio_handler = {
  *
  * @return Current radio model configuration pointer.
  */
-static volatile radio_model_config_t *radio_get_model_config(void) {
+static radio_model_config_t *radio_get_model_config(void) {
     return &radio_handler.models[radio_get_model()];
 }
 
@@ -129,7 +129,7 @@ static volatile radio_model_config_t *radio_get_model_config(void) {
 static void IRAM_ATTR radio_isr(void *arg) {
     radio_channel_t channel = (radio_channel_t) (uintptr_t) arg;
 
-    volatile radio_model_config_t *radio = radio_get_model_config();
+    radio_model_config_t *radio = radio_get_model_config();
 
     uint32_t level = (
         REG_READ(GPIO_IN1_REG) >> (radio->channels[channel].pin - 32)
@@ -149,10 +149,10 @@ static void IRAM_ATTR radio_isr(void *arg) {
 }
 
 void radio_deinit(void) {
-    volatile radio_model_config_t *radio = radio_get_model_config();
+    radio_model_config_t *radio = radio_get_model_config();
 
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
-        volatile radio_channel_config_t *channel = &radio->channels[i];
+        radio_channel_config_t *channel = &radio->channels[i];
 
         if (!channel->enabled) {
             continue;
@@ -182,7 +182,7 @@ const char *radio_get_channel_name(radio_channel_t channel) {
         return NULL;
     };
 
-    volatile radio_model_config_t *radio = radio_get_model_config();
+    radio_model_config_t *radio = radio_get_model_config();
 
     if (!radio->channels[channel].enabled) {
         return NULL;
@@ -196,20 +196,20 @@ radio_model_t radio_get_model(void) {
 }
 
 const char *radio_get_name(void) {
-    volatile radio_model_config_t *radio = radio_get_model_config();
+    radio_model_config_t *radio = radio_get_model_config();
 
     return radio->name;
 }
 
 radio_status_t radio_get_status(void) {
-    volatile radio_model_config_t *radio = radio_get_model_config();
+    radio_model_config_t *radio = radio_get_model_config();
 
     int64_t now = esp_timer_get_time();
 
     bool channel_failsafe;
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
         portDISABLE_INTERRUPTS();
-        volatile radio_channel_config_t *channel = &radio->channels[i];
+        radio_channel_config_t *channel = &radio->channels[i];
         portENABLE_INTERRUPTS();
 
         if (!channel->enabled) {
@@ -270,11 +270,11 @@ const char *radio_get_status_name(void) {
 void radio_init(void) {
     ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_install_isr_service(ESP_INTR_FLAG_IRAM));
 
-    volatile radio_model_config_t *radio = radio_get_model_config();
+    radio_model_config_t *radio = radio_get_model_config();
 
     int64_t now = esp_timer_get_time();
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
-        volatile radio_channel_config_t *channel = &radio->channels[i];
+        radio_channel_config_t *channel = &radio->channels[i];
 
         if (!channel->enabled) {
             continue;
@@ -321,7 +321,7 @@ pwm_norm_t radio_read_channel(radio_channel_t channel) {
         return PWM_NEUTRAL_US;
     };
 
-    volatile radio_model_config_t *radio = radio_get_model_config();
+    radio_model_config_t *radio = radio_get_model_config();
 
     pwm_norm_t pwm;
     if (!radio->channels[channel].enabled) {
@@ -336,11 +336,11 @@ pwm_norm_t radio_read_channel(radio_channel_t channel) {
 }
 
 void radio_read_channels(pwm_norm_t *pwms) {
-    volatile radio_model_config_t *radio = radio_get_model_config();
+    radio_model_config_t *radio = radio_get_model_config();
 
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
         portDISABLE_INTERRUPTS();
-        volatile radio_channel_config_t *channel = &radio->channels[i];
+        radio_channel_config_t *channel = &radio->channels[i];
         portENABLE_INTERRUPTS();
 
         if (!channel->enabled) {
