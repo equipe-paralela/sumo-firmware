@@ -235,9 +235,9 @@ radio_status_t radio_get_status(void) {
                 break;
 
             default:
-                channel_failsafe = false;
+                channel_failsafe = true;
                 LOG_E(
-                    "Fail-Safe triggering condition %d not recognized",
+                    "Failsafe triggering condition %d not recognized",
                     channel->failsafe.trigger
                 );
                 break;
