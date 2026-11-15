@@ -25,13 +25,33 @@ typedef enum radio_channel {
 } radio_channel_t;
 
 /**
- * @brief Radio channel Fail-Safe triggering conditon.
+ * @brief Radio channel failsafe triggering condition.
  */
 typedef enum radio_failsafe {
-    RADIO_FAILSAFE_DISABLE = 0, /**< Fail-Safe trigger disabled. */
-    RADIO_FAILSAFE_TIMEOUT,     /**< Fail-Safe triggered by timeout in microseconds. */
-    RADIO_FAILSAFE_PWM_VALUE,   /**< Fail-Safe triggered by PWM pulse in microseconds. */
-    NUMBER_OF_RADIO_FAILSAFES   /**< Number of radio Fail-Safe triggers. */
+    /**
+     * @brief Failsafe trigger disabled.
+     *
+     * Enabled channels with failsafe disable will still receive PWM signals
+     * but their signals will not be considered for failsafe conditions.
+     */
+    RADIO_FAILSAFE_DISABLE = 0,
+    /**
+     * @brief Failsafe triggered by timeout in microseconds.
+     * 
+     * Enabled channels with failsafe by timeout will trigger failsafe
+     * conditions if the interval since their last update is greater than the 
+     * configured timeout interval.
+     */
+    RADIO_FAILSAFE_TIMEOUT,
+    /**
+     * @brief Failsafe triggered by PWM pulse mismatch.
+     *
+     * Enabled channels with failsafe by timeout will trigger failsafe
+     * conditions if their measured PWM pulse is different than the the
+     * configured PWM value.
+     */
+    RADIO_FAILSAFE_PWM_MISMATCH,
+    NUMBER_OF_RADIO_FAILSAFES   /**< Number of radio failsafe triggers. */
 } radio_failsafe_t;
 
 /**
@@ -58,12 +78,36 @@ typedef enum radio_status {
 } radio_status_t;
 
 /**
- * @brief Radio channel Fail-Safe configuration.
+ * @brief Radio channel failsafe configuration.
  */
 typedef struct radio_failsafe_config {
-    radio_failsafe_t trigger;   /**< Fail-Safe trigger condition. */
-    pwm_norm_t pwm;             /**< Fail-Safe PWM value in microseconds. */
-    int64_t timeout_us;         /**< Fail-Safe timeout in microseconds. */
+    /**
+     * @brief Triggering condition.
+     */
+    radio_failsafe_t trigger;
+    /**
+     * @brief PWM pulse width in microseconds.
+     *
+     * If the ``RADIO_FAILSAFE_PWM_VALUE`` triggering condition is selected, the
+     * PWM pulse width is required and represents the failfree operation.
+     *
+     * If the channel PWM pulse width is different than the failsafe PWM pulse
+     * width, the failsafe condition gets triggered and the radio status is set
+     * to ``RADIO_STATUS_DISCONNECTED``.
+     */
+    pwm_norm_t pwm_expected;
+    /**
+     * @brief Timeout in microseconds.
+     *
+     * If the ``RADIO_FAILSAFE_TIMEOUT`` triggering condition is selected, the
+     * maximum interval between any two PWM pulses is the timeout in
+     * microseconds.
+     *
+     * If the interval between any two PWM pulses is greater than the timeout in
+     * microseconds, the failsafe condition gets triggered and the radio status
+     * is set to ``RADIO_STATUS_DISCONNECTED``.
+     */
+    int64_t timeout_us;
 } radio_failsafe_config_t;
 
 /**
