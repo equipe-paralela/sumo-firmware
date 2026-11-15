@@ -222,8 +222,11 @@ radio_status_t radio_get_status(void) {
 
     bool channel_failsafe;
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
-        portDISABLE_INTERRUPTS();
         radio_channel_config_t *channel = &radio->channels[i];
+
+        portDISABLE_INTERRUPTS();
+        pwm_norm_t channel_pwm          = channel->pwm;
+        int64_t channel_last_time_us    = channel->last_time_us;
         portENABLE_INTERRUPTS();
 
         if (!channel->enabled) {
@@ -237,14 +240,13 @@ radio_status_t radio_get_status(void) {
 
             case RADIO_FAILSAFE_PWM_VALUE:
                 channel_failsafe = (
-                    pwm_normalize(channel->pwm) !=
-                    pwm_normalize(channel->failsafe.pwm)
+                    channel_pwm != channel->failsafe.pwm
                 );
                 break;
 
             case RADIO_FAILSAFE_TIMEOUT:
                 channel_failsafe = (
-                    now - channel->last_time_us
+                    now - channel_last_time_us
                 ) > channel->failsafe.timeout_us;
                 break;
 
@@ -366,9 +368,7 @@ void radio_read_channels(pwm_norm_t *pwms) {
     radio_model_config_t *radio = radio_get_model_config();
 
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
-        portDISABLE_INTERRUPTS();
         radio_channel_config_t *channel = &radio->channels[i];
-        portENABLE_INTERRUPTS();
 
         if (!channel->enabled) {
             pwms[i] = PWM_NEUTRAL_US;
@@ -407,11 +407,9 @@ void radio_set_model(radio_model_t model) {
         return;
     }
 
-    portDISABLE_INTERRUPTS();
     radio_deinit();
 
     radio_handler.model = model;
 
     radio_init();
-    portENABLE_INTERRUPTS();
 }
