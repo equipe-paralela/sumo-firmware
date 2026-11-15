@@ -223,7 +223,8 @@ radio_status_t radio_get_status(void) {
 
             case RADIO_FAILSAFE_PWM_VALUE:
                 channel_failsafe = (
-                    channel->pwm == channel->failsafe.pwm
+                    pwm_normalize(channel->pwm) ==
+                    pwm_normalize(channel->failsafe.pwm)
                 );
                 break;
 
