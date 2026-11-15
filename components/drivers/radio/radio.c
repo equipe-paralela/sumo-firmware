@@ -374,9 +374,11 @@ void radio_set_model(radio_model_t model) {
         return;
     }
 
+    portDISABLE_INTERRUPTS();
     radio_deinit();
 
     radio_handler.model = model;
 
     radio_init();
+    portENABLE_INTERRUPTS();
 }
