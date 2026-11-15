@@ -62,7 +62,7 @@ static radio_handler_t radio_handler = {
                     .pin        = PIN_RC_CH1,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_PWM_VALUE,
-                        .pwm        = PWM_MINIMUM_US
+                        .pwm        = PWM_MAXIMUM_US
                     },
                 },
                 [RADIO_CHANNEL_BUTTON] = {
@@ -230,7 +230,7 @@ radio_status_t radio_get_status(void) {
 
             case RADIO_FAILSAFE_PWM_VALUE:
                 channel_failsafe = (
-                    pwm_normalize(channel->pwm) ==
+                    pwm_normalize(channel->pwm) !=
                     pwm_normalize(channel->failsafe.pwm)
                 );
                 break;
