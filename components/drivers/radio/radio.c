@@ -35,7 +35,7 @@ static radio_handler_t radio_handler = {
                     .pwm_default    = PWM_NEUTRAL_US,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_TIMEOUT,
-                        .timeout_us = RADIO_TIMEOUT_US,
+                        .timeout_us = RADIO_DEFAULT_TIMEOUT_US,
                     },
                 },
                 [RADIO_CHANNEL_THROTTLE] = {
@@ -45,7 +45,7 @@ static radio_handler_t radio_handler = {
                     .pwm_default    = PWM_NEUTRAL_US,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_TIMEOUT,
-                        .timeout_us = RADIO_TIMEOUT_US,
+                        .timeout_us = RADIO_DEFAULT_TIMEOUT_US,
                     },
                 },
                 [RADIO_CHANNEL_5] = {

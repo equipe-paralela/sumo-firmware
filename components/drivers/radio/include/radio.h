@@ -99,15 +99,15 @@ typedef struct radio_handler {
 } radio_handler_t;
 
 /**
- * @def RADIO_TIMEOUT_US
+ * @def RADIO_DEFAULT_TIMEOUT_US
  * @brief Radio disconnection timeout interval in microseconds.
  *
  * The timeout must account for the receiver's transmission period and the
  * acceptable number of missed frames.
  *
- * **Default Value:** 25000 us (25 ms)
+ * **Default Value:** 20000 us (20 ms)
  */
-#define RADIO_TIMEOUT_US 25000
+#define RADIO_DEFAULT_TIMEOUT_US 20000
 
 /**
  * @brief Deinitialize radio channels GPIOs and interrupts.
