@@ -220,7 +220,7 @@ radio_status_t radio_get_status(void) {
 
     int64_t now = esp_timer_get_time();
 
-    bool channel_failsafe;
+    bool radio_failsafe = true;
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
         radio_channel_config_t *channel = &radio->channels[i];
 
@@ -235,37 +235,37 @@ radio_status_t radio_get_status(void) {
 
         switch (channel->failsafe.trigger) {
             case RADIO_FAILSAFE_DISABLE:
-                channel_failsafe = false;
+                radio_failsafe = false;
                 break;
 
             case RADIO_FAILSAFE_PWM_MISMATCH:
-                channel_failsafe = (
+                radio_failsafe = (
                     channel_pwm != channel->failsafe.pwm_expected
                 );
                 break;
 
             case RADIO_FAILSAFE_TIMEOUT:
-                channel_failsafe = (
+                radio_failsafe = (
                     now - channel_last_time_us
                 ) > channel->failsafe.timeout_us;
                 break;
 
             default:
-                channel_failsafe = true;
-                LOG_E(
+                radio_failsafe = true;
+                LOG_W(
                     "Failsafe triggering condition %d not recognized",
                     channel->failsafe.trigger
                 );
                 break;
         }
 
-        if (channel_failsafe) {
+        if (radio_failsafe) {
             break;
         }
     }
 
     radio_status_t new_status;
-    if (channel_failsafe) {
+    if (radio_failsafe) {
         new_status = RADIO_STATUS_DISCONNECTED;
     } else {
         new_status = RADIO_STATUS_CONNECTED;
