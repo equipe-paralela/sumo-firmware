@@ -15,7 +15,11 @@ static volatile radio_handler_t radio_handler = {
         [RADIO_MODEL_FS_GT2B] = {
             .name       = "FlySky GT2B",
             .channels   = {
+                [RADIO_CHANNEL_FAILSAFE] = {
+                    .enabled    = false,
+                },
                 [RADIO_CHANNEL_BUTTON] = {
+                    .enabled    = true,
                     .name       = "BUTTON",
                     .pin        = PIN_RC_CH3,
                     .failsafe   = {
@@ -23,6 +27,7 @@ static volatile radio_handler_t radio_handler = {
                     },
                 },
                 [RADIO_CHANNEL_STEERING] = {
+                    .enabled    = true,
                     .name       = "STEERING",
                     .pin        = PIN_RC_CH1,
                     .failsafe   = {
@@ -31,6 +36,7 @@ static volatile radio_handler_t radio_handler = {
                     },
                 },
                 [RADIO_CHANNEL_THROTTLE] = {
+                    .enabled    = true,
                     .name       = "THROTTLE",
                     .pin        = PIN_RC_CH2,
                     .failsafe   = {
@@ -38,12 +44,19 @@ static volatile radio_handler_t radio_handler = {
                         .timeout_us = RADIO_TIMEOUT_US,
                     },
                 },
+                [RADIO_CHANNEL_5] = {
+                    .enabled    = false,
+                },
+                [RADIO_CHANNEL_6] = {
+                    .enabled    = false,
+                },
             },
         },
         [RADIO_MODEL_RM_POCKET] = {
             .name       = "RadioMaster Pocket",
             .channels   = {
                 [RADIO_CHANNEL_FAILSAFE] = {
+                    .enabled    = true,
                     .name       = "FAIL_SAFE",
                     .pin        = PIN_RC_CH1,
                     .failsafe   = {
@@ -52,6 +65,7 @@ static volatile radio_handler_t radio_handler = {
                     },
                 },
                 [RADIO_CHANNEL_BUTTON] = {
+                    .enabled    = true,
                     .name       = "BUTTON",
                     .pin        = PIN_RC_CH4,
                     .failsafe   = {
@@ -59,6 +73,7 @@ static volatile radio_handler_t radio_handler = {
                     },
                 },
                 [RADIO_CHANNEL_STEERING] = {
+                    .enabled    = true,
                     .name       = "STEERING",
                     .pin        = PIN_RC_CH3,
                     .failsafe   = {
@@ -66,12 +81,18 @@ static volatile radio_handler_t radio_handler = {
                     },
                 },
                 [RADIO_CHANNEL_THROTTLE] = {
+                    .enabled    = true,
                     .name       = "THROTTLE",
                     .pin        = PIN_RC_CH2,
                     .failsafe   = {
                         .trigger    = RADIO_FAILSAFE_DISABLE
                     },
                 },
+                [RADIO_CHANNEL_5] = {
+                    .enabled    = false,
+                },
+                [RADIO_CHANNEL_6] = {
+                    .enabled    = false,
                 },
             },
         },
@@ -132,8 +153,8 @@ void radio_deinit(void) {
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
         volatile radio_channel_config_t *channel = &radio->channels[i];
 
-        if (channel == NULL) {
-            break;
+        if (!channel->enabled) {
+            continue;
         }
 
         ESP_ERROR_CHECK(gpio_isr_handler_remove(channel->pin));
@@ -160,6 +181,10 @@ const char *radio_get_channel_name(radio_channel_t channel) {
 
     volatile radio_model_config_t *radio = radio_get_model_config();
 
+    if (!radio->channels[channel].enabled) {
+        return NULL;
+    }
+
     return radio->channels[channel].name;
 }
 
@@ -184,8 +209,8 @@ radio_status_t radio_get_status(void) {
         volatile radio_channel_config_t *channel = &radio->channels[i];
         portENABLE_INTERRUPTS();
 
-        if (channel == NULL) {
-            break;
+        if (!channel->enabled) {
+            continue;
         }
 
         switch (channel->failsafe.trigger) {
@@ -248,8 +273,8 @@ void radio_init(void) {
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
         volatile radio_channel_config_t *channel = &radio->channels[i];
 
-        if (channel == NULL) {
-            break;
+        if (!channel->enabled) {
+            continue;
         }
 
         gpio_config_t pin_config = {
@@ -294,10 +319,13 @@ pwm_norm_t radio_read_channel(radio_channel_t channel) {
     volatile radio_model_config_t *radio = radio_get_model_config();
 
     pwm_norm_t pwm;
-
-    portDISABLE_INTERRUPTS();
-    pwm = radio->channels[channel].pwm;
-    portENABLE_INTERRUPTS();
+    if (!radio->channels[channel].enabled) {
+        pwm = PWM_NEUTRAL_US;
+    } else {
+        portDISABLE_INTERRUPTS();
+        pwm = radio->channels[channel].pwm;
+        portENABLE_INTERRUPTS();
+    }
 
     return pwm;
 }
@@ -310,11 +338,13 @@ void radio_read_channels(pwm_norm_t *pwms) {
         volatile radio_channel_config_t *channel = &radio->channels[i];
         portENABLE_INTERRUPTS();
 
-        if (channel == NULL) {
-            break;
+        if (!channel->enabled) {
+            pwms[i] = PWM_NEUTRAL_US;
+        } else {
+            portDISABLE_INTERRUPTS();
+            pwms[i] = channel->pwm;
+            portENABLE_INTERRUPTS();
         }
-
-        pwms[i] = channel->pwm;
     }
 }
 

@@ -70,6 +70,7 @@ typedef struct radio_failsafe_config {
  * @brief Radio channel configuration.
  */
 typedef struct radio_channel_config {
+    bool enabled;                       /**< If disabled, no measurements are taken. */
     const char *name;                   /**< Human-readable, null-terminated name of the channel. */
     pin_t pin;                          /**< Channel pin. */
     radio_failsafe_config_t failsafe;   /**< Fail-Safe configuration. */
@@ -113,7 +114,7 @@ void radio_deinit(void);
  * @brief Returns the current radio channel name.
  *
  * @return Human-readable null-terminated string representing the channel name.
- * @retval NULL If channel is invalid.
+ * @retval NULL If channel is disabled or invalid.
  */
 const char *radio_get_channel_name(radio_channel_t channel);
 
@@ -156,23 +157,25 @@ void radio_init(void);
 /**
  * @brief Return latest measured pulse width in microseconds from channel.
  *
+ * Disabled channels are filled with ``PWM_NEUTRAL_US``.
+ *
  * @note Interruptions briefly disabled while copying values.
  *
  * @param[in] channel Radio channel.
  *
  * @return Normalized pulse width in microseconds.
- * @retval PWM_NEUTRAL_US If channel is invalid.
  */
 pwm_norm_t radio_read_channel(radio_channel_t channel);
 
 /**
- * @brief Return latest measured pulse widths in microseconds from all channels.
+ * @brief Read the latest pulse widths from all radio channels.
+ *
+ * Disabled channels are filled with ``PWM_NEUTRAL_US``.
  *
  * @note Interruptions briefly disabled while copying values.
  *
- * @param[in] pwms Array of radio channels.
- *
- * @return Normalized array of pulses width in microseconds.
+ * @param[out] pwms Output array containing at least ``NUMBER_OF_RADIO_CHANNELS``
+ * elements.
  */
 void radio_read_channels(pwm_norm_t *pwms);
 
