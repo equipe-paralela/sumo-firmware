@@ -366,7 +366,13 @@ void radio_set_model(radio_model_t model) {
         LOG_E("invalid model for %d", model);
 
         return;
-    };
+    }
+
+    if (radio_handler.model == model) {
+        LOG_W("%s radio already selected", radio_get_name());
+
+        return;
+    }
 
     radio_deinit();
 
