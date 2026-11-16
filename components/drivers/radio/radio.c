@@ -115,8 +115,6 @@ static radio_handler_t radio_handler = {
 
 /**
  * @brief Returns the current radio model configuration reference.
- *
- * @return Current radio model configuration pointer.
  */
 static radio_model_config_t *radio_get_model_config(void) {
     return &radio_handler.models[radio_get_model()];
