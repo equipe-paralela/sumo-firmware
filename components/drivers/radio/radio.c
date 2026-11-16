@@ -390,6 +390,7 @@ void radio_read_channels(pwm_norm_t *pwms) {
 
     radio_model_config_t *radio = radio_get_model_config();
 
+    radio_status_t radio_status = radio_handler.status;
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
         radio_channel_config_t *channel = &radio->channels[i];
 
@@ -399,7 +400,7 @@ void radio_read_channels(pwm_norm_t *pwms) {
             continue;
         }
 
-        switch (radio_handler.status) {
+        switch (radio_status) {
             case RADIO_STATUS_CONNECTED:
                 portDISABLE_INTERRUPTS();
                 pwms[i] = radio->channels[i].pwm;
