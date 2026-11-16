@@ -151,9 +151,16 @@ static void radio_timer_callback(void* arg) {
                 break;
 
             case RADIO_FAILSAFE_TIMEOUT:
-                failsafe_triggered = (
-                    esp_timer_get_time() - channel_last_time_us
-                ) > channel->failsafe.timeout_us;
+                if (
+                    (channel_last_time_us == 0) ||
+                    (
+                        (
+                            esp_timer_get_time() - channel_last_time_us
+                        ) > channel->failsafe.timeout_us
+                    )
+                ) {
+                    failsafe_triggered = true;
+                }
                 break;
 
             default:
