@@ -249,6 +249,11 @@ typedef struct radio_model_config {
  */
 typedef struct radio_handler {
     /**
+     * @brief Timer handler for status polling.
+     */
+    esp_timer_handle_t timer_handle;
+
+    /**
      * @brief Current radio model.
      */
     radio_model_t model;

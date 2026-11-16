@@ -121,6 +121,61 @@ static radio_model_config_t *radio_get_model_config(void) {
 }
 
 /**
+ * @brief Radio timer callback for status polling.
+ */
+static void radio_timer_callback(void* arg) {
+    radio_model_config_t *radio = radio_get_model_config();
+
+    bool failsafe_triggered = true;
+    for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
+        radio_channel_config_t *channel = &radio->channels[i];
+
+        if (!channel->enabled) {
+            continue;
+        }
+
+        portDISABLE_INTERRUPTS();
+        pwm_norm_t channel_pwm          = channel->pwm;
+        int64_t channel_last_time_us    = channel->last_time_us;
+        portENABLE_INTERRUPTS();
+
+        switch (channel->failsafe.trigger) {
+            case RADIO_FAILSAFE_DISABLE:
+                failsafe_triggered = false;
+                break;
+
+            case RADIO_FAILSAFE_PWM_MISMATCH:
+                failsafe_triggered = (
+                    channel_pwm != channel->failsafe.pwm_expected
+                );
+                break;
+
+            case RADIO_FAILSAFE_TIMEOUT:
+                failsafe_triggered = (
+                    esp_timer_get_time() - channel_last_time_us
+                ) > channel->failsafe.timeout_us;
+                break;
+
+            default:
+                failsafe_triggered = true;
+                break;
+        }
+
+        if (failsafe_triggered) {
+            break;
+        }
+    }
+
+    radio_status_t new_status;
+    if (failsafe_triggered) {
+        new_status = RADIO_STATUS_DISCONNECTED;
+    } else {
+        new_status = RADIO_STATUS_CONNECTED;
+    }
+    radio_handler.status = new_status;
+}
+
+/**
  * @brief GPIO Interrupt Service Routine for the radio PWM pulse capture.
  *
  * ISR attached to each radio channel pins and triggered on any edge.
@@ -178,6 +233,10 @@ void radio_deinit(void) {
 
         ESP_ERROR_CHECK(gpio_reset_pin(channel->pin));
 
+        ESP_ERROR_CHECK(esp_timer_stop(radio_handler.timer_handle));
+
+        ESP_ERROR_CHECK(esp_timer_delete(radio_handler.timer_handle));
+
         LOG_I(
             "%s %s deinit on pin %02d.",
             radio_get_name(),
@@ -216,67 +275,6 @@ const char *radio_get_name(void) {
 }
 
 radio_status_t radio_get_status(void) {
-    radio_model_config_t *radio = radio_get_model_config();
-
-    int64_t now = esp_timer_get_time();
-
-    bool radio_failsafe = true;
-    for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
-        radio_channel_config_t *channel = &radio->channels[i];
-
-        portDISABLE_INTERRUPTS();
-        pwm_norm_t channel_pwm          = channel->pwm;
-        int64_t channel_last_time_us    = channel->last_time_us;
-        portENABLE_INTERRUPTS();
-
-        if (!channel->enabled) {
-            continue;
-        }
-
-        switch (channel->failsafe.trigger) {
-            case RADIO_FAILSAFE_DISABLE:
-                radio_failsafe = false;
-                break;
-
-            case RADIO_FAILSAFE_PWM_MISMATCH:
-                radio_failsafe = (
-                    channel_pwm != channel->failsafe.pwm_expected
-                );
-                break;
-
-            case RADIO_FAILSAFE_TIMEOUT:
-                radio_failsafe = (
-                    now - channel_last_time_us
-                ) > channel->failsafe.timeout_us;
-                break;
-
-            default:
-                radio_failsafe = true;
-                LOG_W(
-                    "Failsafe triggering condition %d not recognized",
-                    channel->failsafe.trigger
-                );
-                break;
-        }
-
-        if (radio_failsafe) {
-            break;
-        }
-    }
-
-    radio_status_t new_status;
-    if (radio_failsafe) {
-        new_status = RADIO_STATUS_DISCONNECTED;
-    } else {
-        new_status = RADIO_STATUS_CONNECTED;
-    }
-
-    if (new_status != radio_handler.status) {
-        radio_handler.status = new_status;
-
-        LOG_W("%s radio %s", radio_get_name(), radio_get_status_name());
-    }
-
     return radio_handler.status;
 }
 
@@ -319,6 +317,20 @@ void radio_init(void) {
         channel->pwm            = channel->pwm_default;
         channel->rise_time_us   = now;
         channel->last_time_us   = now;
+
+        const esp_timer_create_args_t timer_args = {
+            .name            = "RC status timer",
+            .callback        = &radio_timer_callback,
+            .dispatch_method = ESP_TIMER_TASK
+        };
+        ESP_ERROR_CHECK(
+            esp_timer_create(&timer_args, &radio_handler.timer_handle)
+        );
+        ESP_ERROR_CHECK(
+            esp_timer_start_periodic(
+                radio_handler.timer_handle, RADIO_DEFAULT_TIMEOUT_US
+            )
+        );
 
         LOG_I(
             "%s %s initialized on pin %02d.",
