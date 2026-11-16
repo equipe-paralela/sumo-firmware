@@ -220,6 +220,14 @@ static void IRAM_ATTR radio_isr(void *arg) {
 }
 
 void radio_deinit(void) {
+    if (radio_handler.timer_handle != NULL) {
+        ESP_ERROR_CHECK(esp_timer_stop(radio_handler.timer_handle));
+
+        ESP_ERROR_CHECK(esp_timer_delete(radio_handler.timer_handle));
+
+        radio_handler.timer_handle = NULL;
+    }
+
     radio_model_config_t *radio = radio_get_model_config();
 
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
@@ -234,10 +242,6 @@ void radio_deinit(void) {
         ESP_ERROR_CHECK(gpio_isr_handler_remove(channel->pin));
 
         ESP_ERROR_CHECK(gpio_reset_pin(channel->pin));
-
-        ESP_ERROR_CHECK(esp_timer_stop(radio_handler.timer_handle));
-
-        ESP_ERROR_CHECK(esp_timer_delete(radio_handler.timer_handle));
 
         LOG_I(
             "%s %s deinit on pin %02d.",
@@ -289,7 +293,6 @@ void radio_init(void) {
 
     radio_model_config_t *radio = radio_get_model_config();
 
-    int64_t now = esp_timer_get_time();
     for (radio_channel_t i = 0; i < NUMBER_OF_RADIO_CHANNELS; i++) {
         radio_channel_config_t *channel = &radio->channels[i];
 
@@ -317,22 +320,8 @@ void radio_init(void) {
         );
 
         channel->pwm            = channel->pwm_default;
-        channel->rise_time_us   = now;
-        channel->last_time_us   = now;
-
-        const esp_timer_create_args_t timer_args = {
-            .name            = "RC status timer",
-            .callback        = &radio_timer_callback,
-            .dispatch_method = ESP_TIMER_TASK
-        };
-        ESP_ERROR_CHECK(
-            esp_timer_create(&timer_args, &radio_handler.timer_handle)
-        );
-        ESP_ERROR_CHECK(
-            esp_timer_start_periodic(
-                radio_handler.timer_handle, RADIO_DEFAULT_TIMEOUT_US
-            )
-        );
+        channel->rise_time_us   = 0;
+        channel->last_time_us   = 0;
 
         LOG_I(
             "%s %s initialized on pin %02d.",
@@ -341,6 +330,20 @@ void radio_init(void) {
             channel->pin
         );
     }
+
+    const esp_timer_create_args_t timer_args = {
+        .name            = "RC status timer",
+        .callback        = &radio_timer_callback,
+        .dispatch_method = ESP_TIMER_TASK
+    };
+    ESP_ERROR_CHECK(
+        esp_timer_create(&timer_args, &radio_handler.timer_handle)
+    );
+    ESP_ERROR_CHECK(
+        esp_timer_start_periodic(
+            radio_handler.timer_handle, RADIO_DEFAULT_TIMEOUT_US
+        )
+    );
 
     radio_handler.status = RADIO_STATUS_DISCONNECTED;
 }
