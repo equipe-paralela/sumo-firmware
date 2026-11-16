@@ -306,7 +306,13 @@ void radio_init(void) {
             continue;
         }
 
+        channel->pwm            = channel->pwm_default;
+        channel->rise_time_us   = 0;
+        channel->last_time_us   = 0;
+
         assert(GPIO_IS_VALID_GPIO(channel->pin) == true);
+
+        ESP_ERROR_CHECK(gpio_reset_pin(channel->pin));
 
         gpio_config_t pin_config = {
             .pin_bit_mask   = (1ULL << channel->pin),
@@ -324,10 +330,6 @@ void radio_init(void) {
                 (void *) (uintptr_t) i
             )
         );
-
-        channel->pwm            = channel->pwm_default;
-        channel->rise_time_us   = 0;
-        channel->last_time_us   = 0;
 
         LOG_I(
             "%s %s initialized on pin %02d.",
