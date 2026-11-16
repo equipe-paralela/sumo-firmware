@@ -430,6 +430,12 @@ void radio_set_model(radio_model_t model) {
         return;
     }
 
+    if (radio_handler.timer_handle == NULL) {
+        LOG_W("radio not initialized");
+
+        return;
+    }
+
     radio_deinit();
 
     radio_handler.model = model;
