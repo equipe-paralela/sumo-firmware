@@ -105,7 +105,8 @@ static radio_handler_t radio_handler = {
             },
         },
     },
-    .status_names = {
+    .status         = RADIO_STATUS_DISCONNECTED,
+    .status_names   = {
         [RADIO_STATUS_CONNECTED]    = "CONNECTED",
         [RADIO_STATUS_DISCONNECTED] = "DISCONNECTED",
     }
