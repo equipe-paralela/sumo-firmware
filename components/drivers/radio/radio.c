@@ -219,6 +219,7 @@ static void IRAM_ATTR radio_isr(void *arg) {
             pwm_t pwm = (pwm_t) (now - radio->channels[channel].rise_time_us);
 
             radio->channels[channel].pwm = pwm_normalize(pwm);
+            radio->channels[channel].last_time_us = 0;
             radio->channels[channel].last_time_us = now;
         }
     }
