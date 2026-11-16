@@ -285,7 +285,7 @@ radio_status_t radio_get_status(void) {
 }
 
 const char *radio_get_status_name(void) {
-    return radio_handler.status_names[radio_handler.status];
+    return radio_handler.status_names[radio_get_status()];
 }
 
 void radio_init(void) {
