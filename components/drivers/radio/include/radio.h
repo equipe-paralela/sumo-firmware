@@ -202,7 +202,7 @@ typedef struct radio_channel_config {
     /**
      * @brief Default normalized PWM pulse width in microseconds.
      *
-     * @note Value returned while the radio status is 
+     * @note Value returned while the radio status is
      * ``RADIO_STATUS_DISCONNECTED``.
      */
     const pwm_norm_t pwm_default;
