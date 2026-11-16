@@ -239,7 +239,7 @@ void radio_deinit(void) {
 
         LOG_I(
             "%s %s deinit on pin %02d.",
-            radio_get_name(),
+            radio_get_model_name(),
             radio_get_channel_name(i),
             channel->pin
         );
@@ -268,7 +268,7 @@ radio_model_t radio_get_model(void) {
     return radio_handler.model;
 }
 
-const char *radio_get_name(void) {
+const char *radio_get_model_name(void) {
     radio_model_config_t *radio = radio_get_model_config();
 
     return radio->name;
@@ -334,7 +334,7 @@ void radio_init(void) {
 
         LOG_I(
             "%s %s initialized on pin %02d.",
-            radio_get_name(),
+            radio_get_model_name(),
             radio_get_channel_name(i),
             channel->pin
         );
@@ -420,7 +420,7 @@ void radio_set_model(radio_model_t model) {
     }
 
     if (radio_handler.model == model) {
-        LOG_W("%s radio already selected", radio_get_name());
+        LOG_W("%s radio already selected", radio_get_model_name());
 
         return;
     }

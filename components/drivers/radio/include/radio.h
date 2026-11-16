@@ -308,11 +308,11 @@ const char *radio_get_channel_name(radio_channel_t channel);
 radio_model_t radio_get_model(void);
 
 /**
- * @brief Returns the current radio name.
+ * @brief Returns the current radio model name.
  *
  * @return Human-readable null-terminated string representing the radio name.
  */
-const char *radio_get_name(void);
+const char *radio_get_model_name(void);
 
 /**
  * @brief Return the radio status.
