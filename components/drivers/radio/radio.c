@@ -2,11 +2,8 @@
 #include "driver/gpio.h"
 #include "esp_attr.h"
 #include "esp_err.h"
-#include "esp_timer.h"
 #include "logging.h"
 #include "portmacro.h"
-#include "pinout.h"
-#include "pwm.h"
 #include "radio.h"
 #include "soc/gpio_reg.h"
 
