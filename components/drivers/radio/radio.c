@@ -111,6 +111,46 @@ static radio_handler_t radio_handler = {
 };
 
 /**
+ * @brief Returns true if the radio channel failsafe got triggered.
+ *
+ * @param[in] channel Radio channel configuration.
+ */
+static bool radio_channel_failsafe_triggered(radio_channel_config_t *channel) {
+    int64_t now = esp_timer_get_time();
+
+    portDISABLE_INTERRUPTS();
+    pwm_norm_t channel_pwm          = channel->pwm;
+    pwm_norm_t channel_pwm_expected = channel->failsafe.pwm_expected;
+    int64_t channel_last_time_us    = channel->last_time_us;
+    int64_t channel_timeout_us      = channel->failsafe.timeout_us;
+    portENABLE_INTERRUPTS();
+
+    bool failsafe_triggered = true;
+    switch (channel->failsafe.trigger) {
+        case RADIO_FAILSAFE_DISABLE:
+            failsafe_triggered = false;
+            break;
+
+        case RADIO_FAILSAFE_PWM_MISMATCH:
+            failsafe_triggered = (channel_pwm != channel_pwm_expected);
+            break;
+
+        case RADIO_FAILSAFE_TIMEOUT:
+            failsafe_triggered = (
+                (channel_last_time_us == 0) ||
+                ((now - channel_last_time_us) > channel_timeout_us)
+            );
+            break;
+
+        default:
+            failsafe_triggered = true;
+            break;
+    }
+
+    return failsafe_triggered;
+}
+
+/**
  * @brief Returns the current radio model configuration reference.
  */
 static radio_model_config_t *radio_get_model_config(void) {
@@ -131,39 +171,7 @@ static void radio_timer_callback(void* arg) {
             continue;
         }
 
-        portDISABLE_INTERRUPTS();
-        pwm_norm_t channel_pwm          = channel->pwm;
-        int64_t channel_last_time_us    = channel->last_time_us;
-        portENABLE_INTERRUPTS();
-
-        switch (channel->failsafe.trigger) {
-            case RADIO_FAILSAFE_DISABLE:
-                failsafe_triggered = false;
-                break;
-
-            case RADIO_FAILSAFE_PWM_MISMATCH:
-                failsafe_triggered = (
-                    channel_pwm != channel->failsafe.pwm_expected
-                );
-                break;
-
-            case RADIO_FAILSAFE_TIMEOUT:
-                if (
-                    (channel_last_time_us == 0) ||
-                    (
-                        (
-                            esp_timer_get_time() - channel_last_time_us
-                        ) > channel->failsafe.timeout_us
-                    )
-                ) {
-                    failsafe_triggered = true;
-                }
-                break;
-
-            default:
-                failsafe_triggered = true;
-                break;
-        }
+        failsafe_triggered = radio_channel_failsafe_triggered(channel);
 
         if (failsafe_triggered) {
             break;
