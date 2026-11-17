@@ -300,7 +300,13 @@ const char *radio_get_status_name(void) {
 }
 
 void radio_init(void) {
-    ESP_ERROR_CHECK_WITHOUT_ABORT(gpio_install_isr_service(ESP_INTR_FLAG_IRAM));
+    esp_err_t error = gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+
+    if (error != ESP_OK && error != ESP_ERR_INVALID_STATE) {
+        LOG_E("initialization failed with %s", esp_err_to_name(error));
+
+        return;
+    }
 
     radio_model_config_t *radio = radio_get_model_config();
 
