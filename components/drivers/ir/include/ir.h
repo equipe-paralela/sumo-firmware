@@ -3,7 +3,7 @@
  * @brief Infrared receiver device.
  *
  * @author Guilherme Nunes Trofino
- * @date 2026-09-06
+ * @date 2026-11-17
  */
 
 #pragma once
@@ -11,7 +11,6 @@
 #include "driver/rmt_rx.h"
 #include "pinout.h"
 #include "protocol.h"
-#include <stdint.h>
 
 /**
  * @brief Infrared states.
@@ -34,22 +33,29 @@ typedef enum ir_state {
  */
 typedef void (*ir_rx_callback_t)(const protocol_command_t *command);
 
+#define IR_RMT_RX_BUFFER_SYMBOLS    32U
+
 /**
  * @brief Infrared receiver device.
  */
 typedef struct ir {
     const char *name;                               /**< Human-readable null-terminated infrared name. */
+
+    ir_state_t state;                               /**< Infrared state. */
     const char *state_names[NUMBER_OF_IR_STATES];   /**< Human-readable null-terminated Radio status. */
-    const protocol_t *protocol;                     /**< Infrared decoding protocol. */
-    volatile bool rx_done;                          /**< Infrared flag indicating a received frame. */
-    volatile bool valid_data;                       /**< Infrared flag indicating successful decode. */
+
     bool active_low;                                /**< Infrared input inversion flag. */
+    const protocol_t *protocol;                     /**< Infrared decoding protocol. */
+
     pin_t pin;                                      /**< Infrared pin connection. */
     ir_rx_callback_t callback;                      /**< Infrared receive function callback. */
-    ir_state_t state;                               /**< Infrared state. */
-    protocol_command_t decoded_command;             /**< Infrared decoded command buffer. */
     rmt_channel_handle_t rx_channel;                /**< Infrared RMT receive channel. */
-    rmt_symbol_word_t rx_buffer[64];                /**< Infrared RMT receive buffer. */
+    /**< Infrared RMT receive buffer. */
+    rmt_symbol_word_t rx_buffer[IR_RMT_RX_BUFFER_SYMBOLS];
+
+    bool rx_armed;                         /**< Infrared flag indicating successful decode. */
+    bool rx_done;                          /**< Infrared flag indicating a received frame. */
+    size_t rx_num_symbols;
 } ir_t;
 
 /**
@@ -58,7 +64,7 @@ typedef struct ir {
  *
  * **Default Value:** 1 MHz, i.e., 1 tick = 1 µs
  */
-#define IR_RMT_CLOCK_RESOLUTION_HZ  1000000
+#define IR_RMT_CLOCK_RESOLUTION_HZ  1000000U
 
 /**
  * @def IR_RMT_MEMORY_BLOCK_SYMBOL
@@ -66,23 +72,23 @@ typedef struct ir {
  *
  * **Default Value:** 64
  */
-#define IR_RMT_MEMORY_BLOCK_SYMBOL  64
+#define IR_RMT_MEMORY_BLOCK_SYMBOL  48U
 
 /**
  * @def IR_RMT_SIGNAL_MAX_NS
  * @brief RMT signal maximum duration in nano-seconds.
  *
- * **Default Value:** 12 ms
+ * **Default Value:** 3 ms
  */
-#define IR_RMT_SIGNAL_MAX_NS 12000000
+#define IR_RMT_SIGNAL_MAX_NS 3000000U
 
 /**
  * @def IR_RMT_SIGNAL_MIN_NS
  * @brief RMT signal minimum duration in nano-seconds.
  *
- * **Default Value:** 1.25 us
+ * **Default Value:** 3 ms.
  */
-#define IR_RMT_SIGNAL_MIN_NS 1250
+#define IR_RMT_SIGNAL_MIN_NS 3000U
 
 /**
  * @brief Returns the infrared name.

@@ -40,8 +40,14 @@ typedef struct protocol_command {
     uint8_t bit_count;          /**< Command payload in bits. */
     uint32_t address;           /**< Extracted address bits. */
     uint32_t command;           /**< Extracted command bits. */
+    uint32_t extended;          
     protocol_name_t protocol;   /**< Protocol detected. */
 } protocol_command_t;
+
+/**
+ * @brief
+ */
+typedef struct protocol protocol_t;
 
 /**
  * @brief Function pointer interface for protocol decode.
@@ -53,26 +59,29 @@ typedef struct protocol_command {
  * @return true if decoding succeeded, false otherwise.
  */
 typedef bool (*protocol_decode_t) (
+    const protocol_t *protocol,
     const rmt_symbol_word_t *symbols,
-    uint8_t num_symbols,
+    size_t num_symbols,
     protocol_command_t *command
 );
 
 /**
  * @brief Infrared protocol.
  */
-typedef struct protocol {
-    const char *name;           /**< Human-readable null-terminated protocol name. */
-    uint16_t tolerance_us;      /**< Protocol pulse tolerance in microseconds. */
-    uint16_t header_mark_us;    /**< Protocol header pulse high duration in microseconds. */
-    uint16_t header_space_us;   /**< Protocol header pulse low duration in microseconds. */
-    uint16_t bit0_mark_us;      /**< Protocol logic 0 pulse high duration in microseconds. */
-    uint16_t bit1_mark_us;      /**< Protocol logic 1 pulse high duration in microseconds. */
-    uint16_t bit_space_us;      /**< Protocol bit space low duration in microseconds. */
-    uint16_t footer_mark_us;    /**< Protocol footer pulse high duration in microseconds. */
-    uint16_t footer_space_us;   /**< Protocol footer pulse low duration in microseconds. */
-    protocol_decode_t decode;   /**< Pointer to protocol decoder function. */
-} protocol_t;
+struct protocol {
+    protocol_name_t id;
+    const char *name;                   /**< Human-readable null-terminated protocol name. */
+    uint16_t tolerance_us;              /**< Protocol pulse tolerance in microseconds. */
+    uint16_t header_mark_us;            /**< Protocol header pulse high duration in microseconds. */
+    uint16_t header_space_us;           /**< Protocol header pulse low duration in microseconds. */
+    uint16_t bit0_mark_us;              /**< Protocol logic 0 pulse high duration in microseconds. */
+    uint16_t bit1_mark_us;              /**< Protocol logic 1 pulse high duration in microseconds. */
+    uint16_t bit_space_us;              /**< Protocol bit space low duration in microseconds. */
+    uint16_t footer_mark_us;            /**< Protocol footer pulse high duration in microseconds. */
+    uint16_t footer_space_us;           /**< Protocol footer pulse low duration in microseconds. */
+    protocol_decode_t decode;           /**< Pointer to protocol decoder function. */
+    const protocol_command_t *commands;
+};
 
 /**
  * @brief Return protocol command definition by name.
