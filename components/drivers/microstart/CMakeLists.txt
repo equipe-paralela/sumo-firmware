@@ -1,6 +1,6 @@
 idf_component_register(
     SRCS
-        "ir.c"
+        "microstart.c"
     INCLUDE_DIRS
         "include"
     REQUIRES

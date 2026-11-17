@@ -1,8 +1,8 @@
 #include "esc.h"
 #include "fsm.h"
-#include "ir.h"
 #include "led.h"
 #include "logging.h"
+#include "microstart.h"
 #include "pwm.h"
 #include "radio.h"
 #include "sensor.h"
@@ -94,7 +94,7 @@ const char *fsm_get_state_name(fsm_state_t state) {
 
 void fsm_init(void) {
     esc_init();
-    ir_init();
+    microstart_init();
     radio_init();
     sensor_init();
 

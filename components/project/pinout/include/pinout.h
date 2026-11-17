@@ -28,7 +28,7 @@ typedef enum pin {
     PIN_IO35 = 35,          /**< ``GPIO 35`` : spare connection. */
     PIN_IO36 = 36,          /**< ``GPIO 36`` : spare connection. */
     PIN_IO37 = 37,          /**< ``GPIO 37`` : spare connection. */
-    PIN_IRR = 1,            /**< ``GPIO 01`` : @ref ir_t infrared receiver connection. */
+    PIN_MICROSTART = 1,     /**< ``GPIO 01`` : @ref microstart_t connection. */
     PIN_LRGB = 4,           /**< ``GPIO 04`` : @ref led_array_t pin connection. */
     PIN_MUX_COMMON = 16,    /**< ``GPIO 16`` : @ref mux_t common pin connection. */
     PIN_MUX_ADDR0 = 7,      /**< ``GPIO 07`` : @ref mux_t address pin 0 connection. */
@@ -57,7 +57,7 @@ typedef enum pin {
     PIN_ESC_R = 1,          /**< ``GPIO 01`` : @ref ESC_R connection. */
     PIN_I2C_SCL = 17,       /**< ``GPIO 17`` : I2C clock line connection. */
     PIN_I2C_SDA = 18,       /**< ``GPIO 18`` : I2C data line connection. */
-    PIN_IRR = 35,           /**< ``GPIO 35`` : @ref ir_t infrared receiver connection. */
+    PIN_MICROSTART = 35,    /**< ``GPIO 35`` : @ref microstart_t connection. */
     PIN_RC_CH1 = 42,        /**< ``GPIO 42`` : @ref RADIO_CHANNEL_1 connection. */
     PIN_RC_CH2 = 41,        /**< ``GPIO 41`` : @ref RADIO_CHANNEL_2 connection. */
     PIN_RC_CH3 = 40,        /**< ``GPIO 40`` : @ref RADIO_CHANNEL_3 connection. */

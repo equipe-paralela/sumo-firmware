@@ -30,7 +30,7 @@ void search_exit(void);
  * adversary.
  *
  * @note Transition to ``FSM_STATE_SAFE`` when:
- * - **not** ``IR_STATE_START``
+ * - **not** ``MICROSTART_STATE_START``
  *
  * @note Transition to ``FSM_STATE_SURVIVE`` when:
  * - ``sensor_detected_line()``
