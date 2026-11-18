@@ -3,121 +3,265 @@
  * @brief Infrared receiver protocols definition.
  *
  * @author Guilherme Nunes Trofino
- * @date 2026-09-06
+ * @date 2026-11-17
  */
 
 #pragma once
 
+#include "driver/rmt_rx.h"
 #include "driver/rmt_types.h"
 #include <stdint.h>
 
 /**
- * @brief Supported infrared protocols names.
+ * @brief Supported infrared protocols commands names.
  */
-typedef enum protocol_name {
-    PROTOCOL_SONY = 0,          /**< Sony Serial Infra-Red Control protocol. */
-    NUMBER_OF_PROTOCOL_NAMES    /**< Number of protocol names. */
-} protocol_name_t;
+typedef enum protocol_command {
+    /**
+     * @brief Protocol command not defined.
+     *
+     * @note Only used in error reporting.
+     */
+    PROTOCOL_COMMAND_UNDEFINED = -1,
+
+    /**
+     * @brief Protocol command for setting infrared state to ready.
+     */
+    PROTOCOL_COMMAND_READY,
+
+    /**
+     * @brief Protocol command for setting infrared state to start. */
+    PROTOCOL_COMMAND_START,
+
+    /**
+     * @brief Protocol command for setting infrared state to stop. */
+    PROTOCOL_COMMAND_STOP,
+
+    /**
+     * @brief Protocol command for setting infrared state to wait. */
+    PROTOCOL_COMMAND_WAIT,
+
+    /**
+     * @brief Number of protocol commands names.
+     */
+    NUMBER_OF_PROTOCOL_COMMANDS
+} protocol_command_t;
 
 /**
  * @brief Supported infrared protocols names.
- *
- * @note The @ref protocol_command_name command names must match the
- * defined @ref ir_state infrared states sequence.
  */
-typedef enum protocol_command_name {
-    PROTOCOL_COMMAND_READY = 0, /**< Protocol command for infrared ready state. */
-    PROTOCOL_COMMAND_START,     /**< Protocol command for infrared start state. */
-    PROTOCOL_COMMAND_STOP,      /**< Protocol command for infrared stop state. */
-    PROTOCOL_COMMAND_WAIT,      /**< Protocol command for infrared wait state. */
-    NUMBER_OF_PROTOCOL_COMMANDS /**< Number of protocol commands. */
-} protocol_command_name_t;
+typedef enum protocol {
+    /**
+     * @brief Protocol name not defined.
+     *
+     * @note Only used in error reporting.
+     */
+    PROTOCOL_UNDEFINED = -1,
+
+    /**
+     * @brief Sony SIRC protocol.
+     *
+     * @note Serial Infra-Red Control
+     */
+    PROTOCOL_SONY = 0,
+
+    /**
+     * @brief Number of protocol names.
+     */
+    NUMBER_OF_PROTOCOLS
+} protocol_t;
 
 /**
  * @brief Infrared protocol command.
  */
-typedef struct protocol_command {
-    uint8_t bit_count;          /**< Command payload in bits. */
-    uint32_t address;           /**< Extracted address bits. */
-    uint32_t command;           /**< Extracted command bits. */
-    uint32_t extended;          
-    protocol_name_t protocol;   /**< Protocol detected. */
-} protocol_command_t;
+typedef struct protocol_command_config {
+    /**
+     * @brief Human-readable null-terminated command name.
+     */
+    const char *name;
+
+    /**
+     * @brief Protocol name.
+     */
+    protocol_t protocol;
+
+    /**
+     * @brief Command payload in bits.
+     */
+    uint8_t bit_count;
+
+    /**
+     * @brief Extracted address bits.
+     */
+    uint32_t address;
+
+    /**
+     * @brief Extracted command bits.
+     */
+    uint32_t command;
+
+    /**
+     * @brief Extended payload bits.
+     */
+    uint32_t extended;
+} protocol_command_config_t;
 
 /**
- * @brief
+ * @brief Infrared communication protocol configuration.
+ *
+ * @note Not all fields are required for every protocol. Defined only the
+ * suitable fields.
  */
-typedef struct protocol protocol_t;
+typedef struct protocol_config {
+    /**
+     * @brief Protocol identification.
+     */
+    protocol_t id;
+
+    /**
+     * @brief Human-readable null-terminated protocol name.
+     */
+    const char *name;
+
+    /**
+     * @brief Protocol pulse tolerance in microseconds.
+     */
+    uint16_t tolerance_us;
+
+    /**
+     * @brief Protocol header pulse high duration in microseconds.
+     */
+    uint16_t header_mark_us;
+
+    /**
+     * @brief Protocol header pulse low duration in microseconds.
+     */
+    uint16_t header_space_us;
+
+    /**
+     * @brief Protocol logic 0 pulse high duration in microseconds.
+     */
+    uint16_t bit0_mark_us;
+
+    /**
+     * @brief Protocol logic 0 pulse low duration in microseconds.
+     */
+    uint16_t bit0_space_us;
+
+    /**
+     * @brief Protocol logic 1 pulse high duration in microseconds.
+     */
+    uint16_t bit1_mark_us;
+
+    /**
+     * @brief Protocol logic 1 pulse low duration in microseconds.
+     */
+    uint16_t bit1_space_us;
+
+    /**
+     * @brief Protocol footer pulse high duration in microseconds.
+     */
+    uint16_t footer_mark_us;
+
+    /**
+     * @brief Protocol footer pulse low duration in microseconds.
+     */
+    uint16_t footer_space_us;
+
+    /**
+     * @brief Pointter to protocol commands.
+     */
+    const protocol_command_config_t *commands;
+} protocol_config_t;
+
 
 /**
  * @brief Function pointer interface for protocol decode.
  *
  * @param[in] symbols Array of RMT symbols.
  * @param[in] num_symbols Number of RMT symbols in the array.
- * @param[out] command Pointer to structure where data will be stored.
+ * @param[out] command Pointer to command where data will be stored.
  *
  * @return true if decoding succeeded, false otherwise.
  */
 typedef bool (*protocol_decode_t) (
-    const protocol_t *protocol,
+    const protocol_config_t *protocol,
     const rmt_symbol_word_t *symbols,
     size_t num_symbols,
-    protocol_command_t *command
+    protocol_command_config_t *command
 );
 
 /**
- * @brief Infrared protocol.
+ * @brief Infrared communication protocol.
  */
-struct protocol {
-    protocol_name_t id;
-    const char *name;                   /**< Human-readable null-terminated protocol name. */
-    uint16_t tolerance_us;              /**< Protocol pulse tolerance in microseconds. */
-    uint16_t header_mark_us;            /**< Protocol header pulse high duration in microseconds. */
-    uint16_t header_space_us;           /**< Protocol header pulse low duration in microseconds. */
-    uint16_t bit0_mark_us;              /**< Protocol logic 0 pulse high duration in microseconds. */
-    uint16_t bit1_mark_us;              /**< Protocol logic 1 pulse high duration in microseconds. */
-    uint16_t bit_space_us;              /**< Protocol bit space low duration in microseconds. */
-    uint16_t footer_mark_us;            /**< Protocol footer pulse high duration in microseconds. */
-    uint16_t footer_space_us;           /**< Protocol footer pulse low duration in microseconds. */
-    protocol_decode_t decode;           /**< Pointer to protocol decoder function. */
-    const protocol_command_t *commands;
-};
+typedef struct protocol_handler {
+    /**
+     * @brief Protocol configuration pointer.
+     */
+    const protocol_config_t *config;
+
+    /**
+     * @brief Protocol decode function pointer.
+     */
+    protocol_decode_t decode;
+} protocol_handler_t;
 
 /**
- * @brief Return protocol command definition by name.
+ * @brief Attempts to decode RMT symbols in the provided protocol.
  *
- * @param[in] command Protocol command name.
- * @param[in] protocol Protocol name.
+ * @note Initialize command before passing the pointer to avoid undefined
+ * garbage values.
  *
- * @return Pointer to protocol command structure.
+ * @param[in] protocol Protocol to be decoded.
+ * @param[in] symbols RMT symbols received from infrared receiver.
+ * @param[in] num_symbols Number of RMT symbols.
+ * @param[out] command Decoded command if successful.
+ *
+ * @return true if decoding was successful and false otherwise
  */
-const protocol_command_t *protocol_get_command(
-    protocol_command_name_t command, protocol_name_t protocol
+bool protocol_decode(
+    const protocol_t protocol,
+    const rmt_symbol_word_t *symbols,
+    size_t num_symbols,
+    protocol_command_config_t *command
 );
 
 /**
- * @brief Return protocol definition by name.
+ * @brief Return protocol configuration pointer.
  *
- * @param[in] protocol Protocol name.
+ * @param[in] protocol Protocol.
  *
- * @return Pointer to protocol structure.
+ * @return Pointer to protocol configuration pointer.
  */
-const protocol_t *protocol_get_protocol(protocol_name_t protocol);
+const protocol_config_t *protocol_get_protocol_config(protocol_t protocol);
 
 /**
  * @brief Returns the protocol name.
  *
- * @param[in] protocol Protocol name.
+ * @param[in] protocol Protocol.
  *
  * @return Human-readable null-terminated string representing the name.
  */
-const char *protocol_get_protocol_name(protocol_name_t protocol);
+const char *protocol_get_protocol_name(protocol_t protocol);
 
 /**
- * @brief Decodes Sony SIRC 12-bits, 15-bits or 20-bits frames.
+ * @brief Return protocol command.
+ *
+ * @param[in] command Protocol command configuration pointer.
+ *
+ * @return Pointer protocol command.
+ * @retval Returns ``PROTOCOL_COMMAND_UNDEFINED`` if the command is undefined.
  */
-bool protocol_decode_sony(
-    const rmt_symbol_word_t *symbols,
-    uint8_t num_symbols,
-    protocol_command_t *command
+protocol_command_t protocol_get_command(protocol_command_config_t *command);
+
+/**
+ * @brief Return protocol command configuration.
+ *
+ * @param[in] protocol Protocol.
+ * @param[in] command Protocol command.
+ *
+ * @return Human-readable null-terminated string representing the name.
+ * @retval Returns NULL if either the command or the protocol are undefined.
+ */
+const char *protocol_get_command_name(
+    protocol_t protocol, protocol_command_t command
 );

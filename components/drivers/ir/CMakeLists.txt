@@ -2,7 +2,6 @@ idf_component_register(
     SRCS
         "ir.c"
         "protocol/protocol.c"
-        "protocol/protocol_sony.c"
     INCLUDE_DIRS
         "include"
         "protocol/include"

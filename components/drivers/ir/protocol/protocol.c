@@ -1,49 +1,91 @@
+#include "logging.h"
 #include "protocol.h"
 #include "protocol_sony.h"
 
 /**
- * @brief All possible protocol configurations.
+ * @brief All available protocols configurations.
  */
-static const protocol_t *const protocols[NUMBER_OF_PROTOCOL_NAMES] = {
-    [PROTOCOL_SONY] = &protocol_sony,
+static const protocol_handler_t protocols[NUMBER_OF_PROTOCOLS] = {
+    [PROTOCOL_SONY] = {
+        .config = &protocol_sony_config,
+        .decode =  protocol_sony_decode
+    },
 };
 
-const protocol_command_t *protocol_get_command(
-    protocol_command_name_t command_name, protocol_name_t protocol_name
+bool protocol_decode(
+    const protocol_t protocol,
+    const rmt_symbol_word_t *symbols,
+    size_t num_symbols,
+    protocol_command_config_t *command
 ) {
-    const protocol_t *protocol = protocol_get_protocol(protocol_name);
+    return protocols[protocol].decode(
+        protocols[protocol].config,
+        symbols,
+        num_symbols,
+        command
+    );
+}
 
-    if (
-        protocol == NULL ||
-        protocol->commands == NULL ||
-        (unsigned) command_name >= NUMBER_OF_PROTOCOL_COMMANDS
-    ) {
+const protocol_config_t *protocol_get_protocol_config(protocol_t protocol) {
+    if ((unsigned) protocol >= NUMBER_OF_PROTOCOLS) {
+        LOG_E("invalid protocol for %d", protocol);
+
         return NULL;
     }
 
-    const protocol_command_t *command = &protocol->commands[command_name];
-    if (command->bit_count != 0U) {
-        return command;
-    }
-
-    return NULL;
+    return protocols[protocol].config;
 }
 
-const protocol_t *protocol_get_protocol(protocol_name_t protocol_name) {
-    if ((unsigned) protocol_name >= NUMBER_OF_PROTOCOL_NAMES) {
-        // todo add message
+protocol_command_t protocol_get_command(
+    protocol_command_config_t *command
+) {
+    if (command == NULL) {
+        LOG_E("invalid command");
+
+        return PROTOCOL_COMMAND_UNDEFINED;
+    }
+
+    const protocol_config_t *protocol = protocol_get_protocol_config(
+        command->protocol
+    );
+    if (protocol == NULL || protocol->commands == NULL) {
+        return PROTOCOL_COMMAND_UNDEFINED;
+    }
+
+    for (protocol_command_t i = 0; i < NUMBER_OF_PROTOCOL_COMMANDS; i++) {
+        const protocol_command_config_t *candidate = &protocol->commands[i];
+
+        if (
+            candidate->bit_count  == command->bit_count &&
+            candidate->address    == command->address   &&
+            candidate->command    == command->command   &&
+            candidate->extended   == command->extended
+        ) {
+            LOG_V("matching protocol command name is %s", candidate->name);
+
+            return ((protocol_command_t) i);
+        }
+    }
+
+    LOG_E("no matching protocol command name");
+
+    return PROTOCOL_COMMAND_UNDEFINED;
+}
+
+const char *protocol_get_command_name(
+    protocol_t protocol, protocol_command_t command
+) {
+    if ((unsigned) protocol >= NUMBER_OF_PROTOCOLS) {
+        LOG_E("invalid protocol for %d", protocol);
+
         return NULL;
     }
 
-    return protocols[protocol_name];
-}
+    if ((unsigned) command >= NUMBER_OF_PROTOCOL_COMMANDS) {
+        LOG_E("invalid protocol command for %d", command);
 
-const char *protocol_get_protocol_name(protocol_name_t protocol_name) {
-    const protocol_t *protocol = protocol_get_protocol(protocol_name);
-
-    if (protocol != NULL) {
-        return protocol->name;
+        return NULL;
     }
 
-    return NULL;
+    return protocols[protocol].config->commands[command].name;
 }

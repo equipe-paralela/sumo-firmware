@@ -1,17 +1,10 @@
 #include "protocol_sony.h"
 
-#define PROTOCOL_SONY_HEADER_MARK_US    2400U
-#define PROTOCOL_SONY_HEADER_SPACE_US    600U
-#define PROTOCOL_SONY_BIT0_MARK_US       600U
-#define PROTOCOL_SONY_BIT1_MARK_US      1200U
-#define PROTOCOL_SONY_BIT_SPACE_US       600U
-#define PROTOCOL_SONY_TOLERANCE_US       200U
-
 /**
  * @brief Evaluates if the measured value is target within given tolerances.
  *
  * @param[in] measured Measured value in us.
- * @param[in] expected Target measure in us.
+ * @param[in] expected Expected value in us.
  * @param[in] tolerance Measurement tolerance in us.
  *
  * @return true if value reached target within tolerances, false otherwise.
@@ -23,11 +16,11 @@ static bool in_range(uint32_t measured, uint32_t expected, uint32_t tolerance) {
     );
 };
 
-static bool protocol_sony_decode(
-    const protocol_t *protocol,
+bool protocol_sony_decode(
+    const protocol_config_t *protocol,
     const rmt_symbol_word_t *symbols,
     size_t num_symbols,
-    protocol_command_t *command
+    protocol_command_config_t *command
 ) {
     if (command == NULL || protocol == NULL || symbols == NULL) {
         return false;
@@ -37,12 +30,12 @@ static bool protocol_sony_decode(
         return false;
     }
 
-    const uint32_t level_mark   = symbols[0].level0;
-    const uint32_t level_space  = symbols[0].level1;
+    const uint32_t header_mark   = symbols[0].level0;
+    const uint32_t header_space  = symbols[0].level1;
 
     // header validation
     if (
-        (level_mark == level_space) ||
+        (header_mark == header_space) ||
         !in_range(
             symbols[0].duration0,
             protocol->header_mark_us,
@@ -60,12 +53,11 @@ static bool protocol_sony_decode(
     const size_t bit_count  = num_symbols - 1U;
     uint32_t data           = 0U;
 
-
     // data decoding
-    for (size_t bit = 0U; bit < bit_count; ++bit) {
+    for (size_t bit = 0U; bit < bit_count; bit++) {
         const rmt_symbol_word_t *symbol = &symbols[bit + 1U];
 
-        if (symbol->level0 != level_mark || symbol->level1 != level_space) {
+        if (symbol->level0 != header_mark || symbol->level1 != header_space) {
             return false;
         }
 
@@ -73,7 +65,7 @@ static bool protocol_sony_decode(
             ((bit + 1U) < bit_count) &&
             !in_range(
                 symbol->duration1,
-                protocol->bit_space_us,
+                protocol->bit0_space_us,
                 protocol->tolerance_us
             )
         ) {
@@ -87,7 +79,8 @@ static bool protocol_sony_decode(
                 protocol->tolerance_us
             )
         ) {
-
+            // set data[bit] to 0
+            data &= (uint32_t) ~(1UL << bit);
         } else if (
             in_range(
                 symbol->duration0,
@@ -95,7 +88,8 @@ static bool protocol_sony_decode(
                 protocol->tolerance_us
             )
         ) {
-            data |= (uint32_t) (1UL << bit);
+            // set data[bit] to 1
+            data |= (uint32_t)  (1UL << bit);
         } else {
             return false;
         }
@@ -131,26 +125,31 @@ static bool protocol_sony_decode(
 /**
  * @brief All possible commands for each protocol.
  */
-static const protocol_command_t sony_commands[NUMBER_OF_PROTOCOL_COMMANDS] = {
+static const protocol_command_config_t protocol_sony_commands[
+    NUMBER_OF_PROTOCOL_COMMANDS
+] = {
     [PROTOCOL_COMMAND_READY] = {
+        .name       = "COMMAND_READY",
         .bit_count  = 12U,
         .address    = 0x01U,
         .command    = 0x00U,
-        .extended   = 0U,
+        .extended   = 0x00U,
         .protocol   = PROTOCOL_SONY,
     },
     [PROTOCOL_COMMAND_START] = {
+        .name       = "COMMAND_START",
         .bit_count  = 12U,
         .address    = 0x01U,
         .command    = 0x01U,
-        .extended   = 0U,
+        .extended   = 0x00U,
         .protocol   = PROTOCOL_SONY,
     },
     [PROTOCOL_COMMAND_STOP]  = {
+        .name       = "COMMAND_STOP",
         .bit_count  = 12U,
         .address    = 0x01U,
         .command    = 0x02U,
-        .extended   = 0U,
+        .extended   = 0x00U,
         .protocol   = PROTOCOL_SONY,
     },
 };
@@ -158,15 +157,15 @@ static const protocol_command_t sony_commands[NUMBER_OF_PROTOCOL_COMMANDS] = {
 /**
  * @brief All possible protocol configurations.
  */
-const protocol_t protocol_sony = {
+const protocol_config_t protocol_sony_config = {
     .id                 = PROTOCOL_SONY,
     .name               = "SONY",
-    .header_mark_us     = PROTOCOL_SONY_HEADER_MARK_US,
-    .header_space_us    = PROTOCOL_SONY_HEADER_SPACE_US,
-    .bit0_mark_us       = PROTOCOL_SONY_BIT0_MARK_US,
-    .bit1_mark_us       = PROTOCOL_SONY_BIT1_MARK_US,
-    .bit_space_us       = PROTOCOL_SONY_BIT_SPACE_US,
-    .tolerance_us       = PROTOCOL_SONY_TOLERANCE_US,
-    .decode             = protocol_sony_decode,
-    .commands           = sony_commands
+    .tolerance_us       =  200U,
+    .header_mark_us     = 2400U,
+    .header_space_us    =  600U,
+    .bit0_mark_us       =  600U,
+    .bit0_space_us      =  600U,
+    .bit1_mark_us       = 1200U,
+    .bit1_space_us      =  600U,
+    .commands           = protocol_sony_commands
 };
