@@ -39,11 +39,11 @@ void autonomous_exit(void);
 /**
  * @brief Run handler for ``FSM_STATE_AUTONOMOUS``.
  *
- * While the ``ir_t`` is ``IR_STATE_START``, performs a minimal movement
- * sequence to avoid static condition.
+ * While the ``microstart_t`` is ``MICROSTART_STATE_START``, performs a minimal
+ * movement sequence to avoid static condition.
  *
  * @note Transition to ``FSM_STATE_SAFE`` when:
- * - **not** ``IR_STATE_START``
+ * - **not** ``MICROSTART_STATE_START``
  *
  * @note Transition to ``FSM_STATE_SURVIVE`` when:
  * - ``sensor_detected_line()``

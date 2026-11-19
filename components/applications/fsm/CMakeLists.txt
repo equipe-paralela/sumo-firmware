@@ -17,9 +17,9 @@ idf_component_register(
         controller
         esc
         esp_timer
-        ir
         led
         logging
+        microstart
         pwm
         radio
         sensor

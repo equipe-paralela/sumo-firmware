@@ -290,7 +290,7 @@ const char *opening_get_strategy_name(opening_t strategy);
  * @note Transition to ``FSM_STATE_AUTONOMOUS`` when:
  * - ``CONFIG_CONTROL_AUTONOMOUS``
  *
- * - ``IR_STATE_START``
+ * - ``MICROSTART_STATE_START``
  *
  * @note Transition to ``FSM_STATE_MANUAL`` when:
  * - ``CONFIG_CONTROL_RADIO``

@@ -1,7 +1,7 @@
 #include "attack.h"
 #include "controller.h"
 #include "fsm.h"
-#include "ir.h"
+#include "microstart.h"
 #include "sensor.h"
 
 static const controller_command_t attack_commands[] = {
@@ -28,7 +28,7 @@ void attack_exit(void) {
 }
 
 void attack_run(void) {
-    if (ir_get_state() != IR_STATE_START) {
+    if (microstart_get_state() != MICROSTART_STATE_START) {
         return fsm_transition(FSM_STATE_SAFE);
     }
 
