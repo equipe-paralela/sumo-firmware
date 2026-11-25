@@ -5,6 +5,7 @@ idf_component_register(
         "."
     REQUIRES
         fsm
+        ir
         led
         logging
 )
