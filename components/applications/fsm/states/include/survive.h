@@ -195,11 +195,11 @@ const char *survive_get_move_name(survive_move_t move);
 /**
  * @brief Run handler for ``FSM_STATE_SURVIVE``.
  *
- * While the ``microstart_t`` is ``MICROSTART_STATE_START``, autonomous avoid
+ * While the ``IR_STATE_START`` and ``MICROSTART_STATE_START``, autonomous avoid
  * leaving the dojo.
  *
  * @note Transition to ``FSM_STATE_SAFE`` when:
- * - **not** ``MICROSTART_STATE_START``
+ * - **not** ``IR_STATE_START`` and **not** ``MICROSTART_STATE_START``
  *
  * @note Transition to ``FSM_STATE_AUTONOMOUS`` when:
  * - **not** ``sensor_detected_line()``

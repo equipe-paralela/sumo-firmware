@@ -1,5 +1,6 @@
 #include "controller.h"
 #include "fsm.h"
+#include "ir.h"
 #include "logging.h"
 #include "microstart.h"
 #include "sensor.h"
@@ -288,7 +289,10 @@ const char *survive_get_move_name(survive_move_t move) {
 }
 
 void survive_run(void) {
-    if (microstart_get_state() != MICROSTART_STATE_START) {
+    if (
+        (microstart_get_state() != MICROSTART_STATE_START) ||
+        (ir_get_state()         != IR_STATE_START)
+    ) {
         return fsm_transition(FSM_STATE_SAFE);
     }
 

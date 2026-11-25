@@ -2,6 +2,7 @@
 #include "controller.h"
 #include "esc.h"
 #include "fsm.h"
+#include "ir.h"
 #include "led.h"
 #include "logging.h"
 #include "microstart.h"
@@ -385,16 +386,20 @@ static void opening_execution(void) {
 /**
  * @brief Opening strategy wait release command.
  *
- * The @ref config_control_mode_t defines the release condition:
+ * The ``config_control_mode_t`` defines the release condition:
  *
- * - In @ref CONFIG_CONTROL_AUTONOMOUS wait for ``MICROSTART_STATE_START``
+ * - In ``CONFIG_CONTROL_AUTONOMOUS`` wait for ``IR_STATE_START`` and
+ * ``MICROSTART_STATE_START``
  *
- * - In @ref CONFIG_CONTROL_RADIO wait for another button press.
+ * - In ``CONFIG_CONTROL_RADIO`` wait for another button press.
  */
 static void opening_release(void) {
     switch (CONFIG_CONTROL_MODE) {
         case CONFIG_CONTROL_AUTONOMOUS:
-            if (microstart_get_state() == MICROSTART_STATE_START) {
+            if (
+                (microstart_get_state() == MICROSTART_STATE_START) &&
+                (ir_get_state()         == IR_STATE_START)
+            ) {
                 opening.state = OPENING_STATE_EXECUTION;
             }
             break;
@@ -498,7 +503,10 @@ void opening_run(void) {
         case OPENING_STATE_FINISHED:
             switch (CONFIG_CONTROL_MODE) {
                 case CONFIG_CONTROL_AUTONOMOUS:
-                    if (microstart_get_state() == MICROSTART_STATE_START) {
+                    if (
+                        (microstart_get_state() == MICROSTART_STATE_START) &&
+                        (ir_get_state()         == IR_STATE_START)
+                    ) {
                         fsm_transition(FSM_STATE_AUTONOMOUS);
                     }
                     break;

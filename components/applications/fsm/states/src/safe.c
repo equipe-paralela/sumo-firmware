@@ -1,6 +1,7 @@
 #include "config.h"
 #include "controller.h"
 #include "fsm.h"
+#include "ir.h"
 #include "microstart.h"
 #include "opening.h"
 #include "radio.h"
@@ -14,12 +15,18 @@ void safe_run(void) {
     switch (CONFIG_CONTROL_MODE) {
         case CONFIG_CONTROL_AUTONOMOUS:
             if (opening_get_state() == OPENING_STATE_FINISHED) {
-                if (microstart_get_state() == MICROSTART_STATE_START) {
+                if (
+                    (microstart_get_state() == MICROSTART_STATE_START) &&
+                    (ir_get_state()         == IR_STATE_START)
+                ) {
                     fsm_transition(FSM_STATE_AUTONOMOUS);
                 }
             } else {
                 if (radio_get_status() == RADIO_STATUS_CONNECTED) {
-                    if (microstart_get_state() == MICROSTART_STATE_STANDBY) {
+                    if (
+                        (microstart_get_state() == MICROSTART_STATE_STANDBY) &&
+                        (ir_get_state()         == IR_STATE_STANDBY)
+                    ) {
                         fsm_transition(FSM_STATE_OPENING);
                     }
                 }

@@ -26,7 +26,7 @@ void safe_entry(void);
  *
  * - ``OPENING_STATE_FINISHED``
  *
- * - ``MICROSTART_STATE_START``
+ * - ``IR_STATE_START`` and ``MICROSTART_STATE_START``
  *
  * @note Transition to ``FSM_STATE_MANUAL`` when:
  * - ``CONFIG_CONTROL_RADIO``
@@ -42,7 +42,7 @@ void safe_entry(void);
  *
  *   - ``RADIO_STATUS_CONNECTED``
  *
- *   - ``MICROSTART_STATE_STANDBY``
+ *   - ``IR_STATE_START`` and ``MICROSTART_STATE_STANDBY``
  *
  * - ``CONFIG_CONTROL_RADIO``
  *
