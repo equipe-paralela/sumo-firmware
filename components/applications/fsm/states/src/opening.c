@@ -2,9 +2,20 @@
 #include "controller.h"
 #include "esc.h"
 #include "fsm.h"
+#if   defined(CONFIG_MAINBOARD_V3)
 #include "ir.h"
+#elif defined(CONFIG_MAINBOARD_V2)
+#include "ir.h"
+#elif defined(CONFIG_MAINBOARD_V1)
+#endif
 #include "led.h"
 #include "logging.h"
+#if   defined(CONFIG_MAINBOARD_V3)
+#include "microstart.h"
+#elif defined(CONFIG_MAINBOARD_V2)
+#elif defined(CONFIG_MAINBOARD_V1)
+#include "microstart.h"
+#endif
 #include "opening.h"
 #include "radio.h"
 #include "sensor.h"
@@ -385,16 +396,26 @@ static void opening_execution(void) {
 /**
  * @brief Opening strategy wait release command.
  *
- * The @ref config_control_mode_t defines the release condition:
+ * The ``config_control_mode_t`` defines the release condition:
  *
- * - In @ref CONFIG_CONTROL_AUTONOMOUS wait for @ref IR_STATE_START
+ * - In ``CONFIG_CONTROL_AUTONOMOUS`` wait for ``IR_STATE_RUN`` and
+ * ``MICROSTART_STATE_RUN``
  *
- * - In @ref CONFIG_CONTROL_RADIO wait for another button press.
+ * - In ``CONFIG_CONTROL_RADIO`` wait for another button press.
  */
 static void opening_release(void) {
     switch (CONFIG_CONTROL_MODE) {
         case CONFIG_CONTROL_AUTONOMOUS:
-            if (ir_get_state() == IR_STATE_START) {
+            if (
+#if   defined(CONFIG_MAINBOARD_V3)
+                (microstart_get_state() == MICROSTART_STATE_RUN) &&
+                (ir_get_state()         == IR_STATE_RUN)
+#elif defined(CONFIG_MAINBOARD_V2)
+                (ir_get_state()         == IR_STATE_RUN)
+#elif defined(CONFIG_MAINBOARD_V1)
+                (microstart_get_state() == MICROSTART_STATE_RUN)
+#endif
+            ) {
                 opening.state = OPENING_STATE_EXECUTION;
             }
             break;
@@ -498,7 +519,16 @@ void opening_run(void) {
         case OPENING_STATE_FINISHED:
             switch (CONFIG_CONTROL_MODE) {
                 case CONFIG_CONTROL_AUTONOMOUS:
-                    if (ir_get_state() == IR_STATE_START) {
+                    if (
+#if   defined(CONFIG_MAINBOARD_V3)
+                        (microstart_get_state() == MICROSTART_STATE_RUN) &&
+                        (ir_get_state()         == IR_STATE_RUN)
+#elif defined(CONFIG_MAINBOARD_V2)
+                        (ir_get_state()         == IR_STATE_RUN)
+#elif defined(CONFIG_MAINBOARD_V1)
+                        (microstart_get_state() == MICROSTART_STATE_RUN)
+#endif
+                    ) {
                         fsm_transition(FSM_STATE_AUTONOMOUS);
                     }
                     break;

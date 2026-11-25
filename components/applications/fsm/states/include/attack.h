@@ -26,10 +26,15 @@ void attack_exit(void);
 /**
  * @brief Run handler for ``FSM_STATE_ATTACK``.
  *
- * While the ``ir_t`` is ``IR_STATE_START``, autonomously push the adversary.
+ * While active, autonomously push the adversary.
  *
  * @note Transition to ``FSM_STATE_SAFE`` when:
- * - **not** ``IR_STATE_START``
+ * - in ``CONFIG_MAINBOARD_V3``: **not** ``IR_STATE_RUN`` or **not**
+ * ``MICROSTART_STATE_RUN``
+ *
+ * - in ``CONFIG_MAINBOARD_V2``: **not** ``IR_STATE_RUN``
+ *
+ * - in ``CONFIG_MAINBOARD_V1``: **not** ``MICROSTART_STATE_RUN``
  *
  * @note Transition to ``FSM_STATE_SURVIVE`` when:
  * - ``sensor_detected_line()``

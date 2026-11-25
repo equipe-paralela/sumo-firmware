@@ -20,6 +20,7 @@ idf_component_register(
         ir
         led
         logging
+        microstart
         pwm
         radio
         sensor

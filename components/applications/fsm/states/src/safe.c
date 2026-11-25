@@ -1,7 +1,14 @@
 #include "config.h"
 #include "controller.h"
 #include "fsm.h"
+#if   defined(CONFIG_MAINBOARD_V3)
 #include "ir.h"
+#include "microstart.h"
+#elif defined(CONFIG_MAINBOARD_V2)
+#include "ir.h"
+#elif defined(CONFIG_MAINBOARD_V1)
+#include "microstart.h"
+#endif
 #include "opening.h"
 #include "radio.h"
 #include "safe.h"
@@ -14,12 +21,30 @@ void safe_run(void) {
     switch (CONFIG_CONTROL_MODE) {
         case CONFIG_CONTROL_AUTONOMOUS:
             if (opening_get_state() == OPENING_STATE_FINISHED) {
-                if (ir_get_state() == IR_STATE_START) {
+                if (
+#if   defined(CONFIG_MAINBOARD_V3)
+                    (microstart_get_state() == MICROSTART_STATE_RUN) &&
+                    (ir_get_state()         == IR_STATE_RUN)
+#elif defined(CONFIG_MAINBOARD_V2)
+                    (ir_get_state()         == IR_STATE_RUN)
+#elif defined(CONFIG_MAINBOARD_V1)
+                    (microstart_get_state() == MICROSTART_STATE_RUN)
+#endif
+                ) {
                     fsm_transition(FSM_STATE_AUTONOMOUS);
                 }
             } else {
                 if (radio_get_status() == RADIO_STATUS_CONNECTED) {
-                    if (ir_get_state() == IR_STATE_STANDBY) {
+                    if (
+#if   defined(CONFIG_MAINBOARD_V3)
+                        (microstart_get_state() == MICROSTART_STATE_STANDBY) &&
+                        (ir_get_state()         == IR_STATE_STANDBY)
+#elif defined(CONFIG_MAINBOARD_V2)
+                        (ir_get_state()         == IR_STATE_STANDBY)
+#elif defined(CONFIG_MAINBOARD_V1)
+                        (microstart_get_state() == MICROSTART_STATE_STANDBY)
+#endif
+                    ) {
                         fsm_transition(FSM_STATE_OPENING);
                     }
                 }

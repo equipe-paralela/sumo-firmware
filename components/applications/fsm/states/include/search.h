@@ -26,11 +26,15 @@ void search_exit(void);
 /**
  * @brief Run handler for ``FSM_STATE_SEARCH``.
  *
- * While the ``radio`` is ``RADIO_STATUS_CONNECTED``, autonomous align with the
- * adversary.
+ * While active, autonomous align with the adversary.
  *
  * @note Transition to ``FSM_STATE_SAFE`` when:
- * - **not** ``IR_STATE_START``
+ * - in ``CONFIG_MAINBOARD_V3``: **not** ``IR_STATE_RUN`` or **not**
+ * ``MICROSTART_STATE_RUN``
+ *
+ * - in ``CONFIG_MAINBOARD_V2``: **not** ``IR_STATE_RUN``
+ *
+ * - in ``CONFIG_MAINBOARD_V1``: **not** ``MICROSTART_STATE_RUN``
  *
  * @note Transition to ``FSM_STATE_SURVIVE`` when:
  * - ``sensor_detected_line()``

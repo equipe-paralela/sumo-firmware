@@ -1,7 +1,18 @@
 #include "controller.h"
 #include "fsm.h"
+#if   defined(CONFIG_MAINBOARD_V3)
 #include "ir.h"
+#elif defined(CONFIG_MAINBOARD_V2)
+#include "ir.h"
+#elif defined(CONFIG_MAINBOARD_V1)
+#endif
 #include "logging.h"
+#if   defined(CONFIG_MAINBOARD_V3)
+#include "microstart.h"
+#elif defined(CONFIG_MAINBOARD_V2)
+#elif defined(CONFIG_MAINBOARD_V1)
+#include "microstart.h"
+#endif
 #include "sensor.h"
 #include "survive.h"
 
@@ -288,7 +299,16 @@ const char *survive_get_move_name(survive_move_t move) {
 }
 
 void survive_run(void) {
-    if (ir_get_state() != IR_STATE_START) {
+    if (
+#if   defined(CONFIG_MAINBOARD_V3)
+        (microstart_get_state() != MICROSTART_STATE_RUN) ||
+        (ir_get_state()         != IR_STATE_RUN)
+#elif defined(CONFIG_MAINBOARD_V2)
+        (ir_get_state()         != IR_STATE_RUN)
+#elif defined(CONFIG_MAINBOARD_V1)
+        (microstart_get_state() != MICROSTART_STATE_RUN)
+#endif
+    ) {
         return fsm_transition(FSM_STATE_SAFE);
     }
 

@@ -195,10 +195,15 @@ const char *survive_get_move_name(survive_move_t move);
 /**
  * @brief Run handler for ``FSM_STATE_SURVIVE``.
  *
- * While the ``ir_t`` is ``IR_STATE_START``, autonomous avoid leaving the dojo.
+ * While active, autonomous avoid leaving the dojo.
  *
  * @note Transition to ``FSM_STATE_SAFE`` when:
- * - **not** ``IR_STATE_START``
+ * - in ``CONFIG_MAINBOARD_V3``: **not** ``IR_STATE_RUN`` or **not**
+ * ``MICROSTART_STATE_RUN``
+ *
+ * - in ``CONFIG_MAINBOARD_V2``: **not** ``IR_STATE_RUN``
+ *
+ * - in ``CONFIG_MAINBOARD_V1``: **not** ``MICROSTART_STATE_RUN``
  *
  * @note Transition to ``FSM_STATE_AUTONOMOUS`` when:
  * - **not** ``sensor_detected_line()``

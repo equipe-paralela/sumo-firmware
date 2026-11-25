@@ -7,7 +7,7 @@ on:
       - ".github/workflows/platformio.yml"
       - 'components/**'
       - 'src/**'
-      - 'tests/**'
+      - 'test/**'
       - 'CMakeLists.txt'
       - 'dependencies.lock'
       - 'platformio.ini'
