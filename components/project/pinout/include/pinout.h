@@ -23,13 +23,13 @@ typedef enum pin {
     PIN_I2C_SCL = 17,       /**< ``GPIO 17`` : I2C clock line connection. */
     PIN_I2C_SDA = 18,       /**< ``GPIO 18`` : I2C data line connection. */
     PIN_IO00 = 0,           /**< ``GPIO 00`` : actively low, enables ESP32 boot mode. */
-    PIN_IO10 = 10,          /**< ``GPIO 10`` : spare connection. */
     PIN_IO21 = 21,          /**< ``GPIO 21`` : spare connection. */
     PIN_IO35 = 35,          /**< ``GPIO 35`` : spare connection. */
     PIN_IO36 = 36,          /**< ``GPIO 36`` : spare connection. */
     PIN_IO37 = 37,          /**< ``GPIO 37`` : spare connection. */
-    PIN_MICROSTART = 1,     /**< ``GPIO 01`` : @ref microstart_t connection. */
+    PIN_IR = 1,             /**< ``GPIO 01`` : @ref ir_t connection. */
     PIN_LRGB = 4,           /**< ``GPIO 04`` : @ref led_array_t pin connection. */
+    PIN_MICROSTART = 10,    /**< ``GPIO 10`` : @ref microstart_t connection. */
     PIN_MUX_COMMON = 16,    /**< ``GPIO 16`` : @ref mux_t common pin connection. */
     PIN_MUX_ADDR0 = 7,      /**< ``GPIO 07`` : @ref mux_t address pin 0 connection. */
     PIN_MUX_ADDR1 = 15,     /**< ``GPIO 15`` : @ref mux_t address pin 1 connection. */
