@@ -9,6 +9,7 @@
 #pragma once
 
 #include "driver/rmt_rx.h"
+#include "freertos/FreeRTOS.h"
 #include "ir_constants.h"
 #include "pinout.h"
 #include "protocol.h"
@@ -31,23 +32,65 @@ typedef enum ir_state {
  * @brief Infrared receiver device.
  */
 typedef struct ir {
-    const char *name;                               /**< Human-readable null-terminated infrared name. */
+    /**
+     * @brief Human-readable null-terminated infrared name.
+     */
+    const char *name;
 
-    ir_state_t state;                               /**< Infrared state. */
-    const char *state_names[NUMBER_OF_IR_STATES];   /**< Human-readable null-terminated Radio status. */
+    /**
+     * @brief Infrared state.
+     */
+    ir_state_t state;
 
-    bool active_low;                                /**< Infrared input inversion flag. */
-    const protocol_t *protocol;                     /**< Infrared decoding protocol. */
+    /**
+     * @brief Human-readable null-terminated infrared states names.
+     */
+    const char *state_names[NUMBER_OF_IR_STATES];
 
-    pin_t pin;                                      /**< Infrared pin connection. */
-    ir_rx_callback_t callback;                      /**< Infrared receive function callback. */
-    rmt_channel_handle_t rx_channel;                /**< Infrared RMT receive channel. */
-    /**< Infrared RMT receive buffer. */
-    rmt_symbol_word_t rx_buffer[IR_RMT_RX_BUFFER_SYMBOLS];
+    /**
+     * @brief
+     */
+    QueueHandle_t queue;
 
-    bool rx_armed;                         /**< Infrared flag indicating successful decode. */
-    bool rx_done;                          /**< Infrared flag indicating a received frame. */
-    size_t rx_num_symbols;
+    /**
+     * @brief Infrared decoding protocol.
+     */
+    protocol_t protocol;
+
+    /**
+     * @brief Infrared pin connection.
+     */
+    pin_t pin;
+
+    /**
+     * @brief Infrared pin pullup.
+     */
+    bool pin_pullup;
+
+    /**
+     * @brief Infrared input inversion flag.
+     */
+    bool rmt_inverted_in;
+
+    /**
+     * @brief Infrared RMT RX channel.
+     */
+    rmt_channel_handle_t rmt_rx_channel;
+
+    /**
+     * @brief
+     */
+    rmt_receive_config_t rmt_receive_config;
+
+    /**
+     * @brief
+     */
+    rmt_rx_done_event_data_t rmt_rx_done_event_data;
+
+    /**
+     * @brief Infrared RMT RX buffer.
+     */
+    rmt_symbol_word_t rmt_rx_buffer[IR_RMT_RX_BUFFER_SYMBOLS];
 } ir_t;
 
 /**
