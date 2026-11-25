@@ -29,16 +29,19 @@ typedef enum protocol_command {
     PROTOCOL_COMMAND_READY,
 
     /**
-     * @brief Protocol command for setting infrared state to start. */
+     * @brief Protocol command for setting infrared state to wait.
+     */
+    PROTOCOL_COMMAND_RESET,
+
+    /**
+     * @brief Protocol command for setting infrared state to start.
+     */
     PROTOCOL_COMMAND_START,
 
     /**
-     * @brief Protocol command for setting infrared state to stop. */
+     * @brief Protocol command for setting infrared state to stop.
+     */
     PROTOCOL_COMMAND_STOP,
-
-    /**
-     * @brief Protocol command for setting infrared state to wait. */
-    PROTOCOL_COMMAND_WAIT,
 
     /**
      * @brief Number of protocol commands names.
@@ -74,6 +77,11 @@ typedef enum protocol {
  * @brief Infrared protocol command.
  */
 typedef struct protocol_command_config {
+    /**
+     * @brief Human-readable null-terminated command key.
+     */
+    const char *key;
+
     /**
      * @brief Human-readable null-terminated command name.
      */
@@ -172,7 +180,6 @@ typedef struct protocol_config {
      */
     const protocol_command_config_t *commands;
 } protocol_config_t;
-
 
 /**
  * @brief Function pointer interface for protocol decode.

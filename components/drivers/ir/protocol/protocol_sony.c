@@ -7,6 +7,7 @@ static const protocol_command_config_t protocol_sony_commands[
     NUMBER_OF_PROTOCOL_COMMANDS
 ] = {
     [PROTOCOL_COMMAND_READY] = {
+        .key        = "NUMBER_1",
         .name       = "COMMAND_READY",
         .bit_count  = 12U,
         .address    = 0x01U,
@@ -14,7 +15,17 @@ static const protocol_command_config_t protocol_sony_commands[
         .extended   = 0x00U,
         .protocol   = PROTOCOL_SONY,
     },
+    [PROTOCOL_COMMAND_RESET] = {
+        .key        = "POWER_ON",
+        .name       = "COMMAND_RESET",
+        .bit_count  = 12U,
+        .address    = 0x01U,
+        .command    = 0x15U,
+        .extended   = 0x00U,
+        .protocol   = PROTOCOL_SONY,
+    },
     [PROTOCOL_COMMAND_START] = {
+        .key        = "NUMBER_2",
         .name       = "COMMAND_START",
         .bit_count  = 12U,
         .address    = 0x01U,
@@ -23,6 +34,7 @@ static const protocol_command_config_t protocol_sony_commands[
         .protocol   = PROTOCOL_SONY,
     },
     [PROTOCOL_COMMAND_STOP]  = {
+        .key        = "NUMBER_3",
         .name       = "COMMAND_STOP",
         .bit_count  = 12U,
         .address    = 0x01U,
