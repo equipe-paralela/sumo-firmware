@@ -197,7 +197,7 @@ typedef bool (*protocol_decode_t) (
 );
 
 /**
- * @brief Infrared communication protocol.
+ * @brief Infrared communication protocol handler.
  */
 typedef struct protocol_handler {
     /**
@@ -214,8 +214,7 @@ typedef struct protocol_handler {
 /**
  * @brief Attempts to decode RMT symbols in the provided protocol.
  *
- * @note Initialize command before passing the pointer to avoid undefined
- * garbage values.
+ * @note Initialize command pointer to NULL to avoid undefined garbage values.
  *
  * @param[in] protocol Protocol to be decoded.
  * @param[in] symbols RMT symbols received from infrared receiver.
@@ -243,7 +242,7 @@ const protocol_config_t *protocol_get_protocol_config(protocol_t protocol);
 /**
  * @brief Returns the protocol name.
  *
- * @param[in] protocol Protocol.
+ * @param[in] protocol Infrared protocol name.
  *
  * @return Human-readable null-terminated string representing the name.
  */
@@ -254,19 +253,21 @@ const char *protocol_get_protocol_name(protocol_t protocol);
  *
  * @param[in] command Protocol command configuration pointer.
  *
+ * @note Returns ``PROTOCOL_COMMAND_UNDEFINED`` if the command is undefined.
+ *
  * @return Pointer protocol command.
- * @retval Returns ``PROTOCOL_COMMAND_UNDEFINED`` if the command is undefined.
  */
 protocol_command_t protocol_get_command(protocol_command_config_t *command);
 
 /**
  * @brief Return protocol command configuration.
  *
- * @param[in] protocol Protocol.
- * @param[in] command Protocol command.
+ * @param[in] protocol Infrared protocol name.
+ * @param[in] command Infrared protocol command.
+ *
+ * @note Returns NULL if either the command or the protocol are undefined.
  *
  * @return Human-readable null-terminated string representing the name.
- * @retval Returns NULL if either the command or the protocol are undefined.
  */
 const char *protocol_get_command_name(
     protocol_t protocol, protocol_command_t command
