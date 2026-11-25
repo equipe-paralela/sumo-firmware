@@ -9,6 +9,7 @@
 #pragma once
 
 #include "driver/rmt_rx.h"
+#include "ir_constants.h"
 #include "pinout.h"
 #include "protocol.h"
 
@@ -25,15 +26,6 @@ typedef enum ir_state {
     IR_STATE_WAIT,      /**< Infrared receiver waiting commands. */
     NUMBER_OF_IR_STATES /**< Number of infrared states. */
 } ir_state_t;
-
-/**
- * @brief Infrared receive callback function.
- *
- * @param[in] command Protocol command.
- */
-typedef void (*ir_rx_callback_t)(const protocol_command_t *command);
-
-#define IR_RMT_RX_BUFFER_SYMBOLS    32U
 
 /**
  * @brief Infrared receiver device.
@@ -57,38 +49,6 @@ typedef struct ir {
     bool rx_done;                          /**< Infrared flag indicating a received frame. */
     size_t rx_num_symbols;
 } ir_t;
-
-/**
- * @def IR_RMT_CLOCK_RESOLUTION_HZ
- * @brief RMT clock resolution in hertz.
- *
- * **Default Value:** 1 MHz, i.e., 1 tick = 1 µs
- */
-#define IR_RMT_CLOCK_RESOLUTION_HZ  1000000U
-
-/**
- * @def IR_RMT_MEMORY_BLOCK_SYMBOL
- * @brief RMT memory block symbol size.
- *
- * **Default Value:** 64
- */
-#define IR_RMT_MEMORY_BLOCK_SYMBOL  48U
-
-/**
- * @def IR_RMT_SIGNAL_MAX_NS
- * @brief RMT signal maximum duration in nano-seconds.
- *
- * **Default Value:** 3 ms
- */
-#define IR_RMT_SIGNAL_MAX_NS 3000000U
-
-/**
- * @def IR_RMT_SIGNAL_MIN_NS
- * @brief RMT signal minimum duration in nano-seconds.
- *
- * **Default Value:** 3 ms.
- */
-#define IR_RMT_SIGNAL_MIN_NS 3000U
 
 /**
  * @brief Returns the infrared name.

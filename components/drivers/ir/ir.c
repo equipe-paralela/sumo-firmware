@@ -170,9 +170,9 @@ void ir_init(void) {
     rmt_rx_channel_config_t rmt_rx_config = {
         .gpio_num           = ir.pin,
         .clk_src            = RMT_CLK_SRC_DEFAULT,
-        .resolution_hz      = IR_RMT_CLOCK_RESOLUTION_HZ,
-        .mem_block_symbols  = IR_RMT_MEMORY_BLOCK_SYMBOL,
-        .flags.invert_in    = ir.active_low,
+        .resolution_hz      = IR_RMT_RX_CLOCK_RESOLUTION_HZ,
+        .mem_block_symbols  = IR_RMT_RX_MEMORY_BLOCK_SYMBOL,
+        .flags.invert_in    = ir.rmt_inverted_in,
         .flags.with_dma     = false,
     };
     ESP_ERROR_CHECK(rmt_new_rx_channel(&rmt_rx_config, &ir.rx_channel));
