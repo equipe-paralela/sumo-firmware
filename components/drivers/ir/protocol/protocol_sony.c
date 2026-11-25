@@ -1,6 +1,51 @@
 #include "protocol_sony.h"
 
 /**
+ * @brief Sony SIRC protocol commands.
+ */
+static const protocol_command_config_t protocol_sony_commands[
+    NUMBER_OF_PROTOCOL_COMMANDS
+] = {
+    [PROTOCOL_COMMAND_READY] = {
+        .name       = "COMMAND_READY",
+        .bit_count  = 12U,
+        .address    = 0x01U,
+        .command    = 0x00U,
+        .extended   = 0x00U,
+        .protocol   = PROTOCOL_SONY,
+    },
+    [PROTOCOL_COMMAND_START] = {
+        .name       = "COMMAND_START",
+        .bit_count  = 12U,
+        .address    = 0x01U,
+        .command    = 0x01U,
+        .extended   = 0x00U,
+        .protocol   = PROTOCOL_SONY,
+    },
+    [PROTOCOL_COMMAND_STOP]  = {
+        .name       = "COMMAND_STOP",
+        .bit_count  = 12U,
+        .address    = 0x01U,
+        .command    = 0x02U,
+        .extended   = 0x00U,
+        .protocol   = PROTOCOL_SONY,
+    },
+};
+
+const protocol_config_t protocol_sony_config = {
+    .id                 = PROTOCOL_SONY,
+    .name               = "SONY",
+    .tolerance_us       =  200U,
+    .header_mark_us     = 2400U,
+    .header_space_us    =  600U,
+    .bit0_mark_us       =  600U,
+    .bit0_space_us      =  600U,
+    .bit1_mark_us       = 1200U,
+    .bit1_space_us      =  600U,
+    .commands           = protocol_sony_commands
+};
+
+/**
  * @brief Evaluates if the measured value is target within given tolerances.
  *
  * @param[in] measured Measured value in us.
@@ -120,51 +165,3 @@ bool protocol_sony_decode(
 
     return true;
 }
-
-/**
- * @brief All possible commands for each protocol.
- */
-static const protocol_command_config_t protocol_sony_commands[
-    NUMBER_OF_PROTOCOL_COMMANDS
-] = {
-    [PROTOCOL_COMMAND_READY] = {
-        .name       = "COMMAND_READY",
-        .bit_count  = 12U,
-        .address    = 0x01U,
-        .command    = 0x00U,
-        .extended   = 0x00U,
-        .protocol   = PROTOCOL_SONY,
-    },
-    [PROTOCOL_COMMAND_START] = {
-        .name       = "COMMAND_START",
-        .bit_count  = 12U,
-        .address    = 0x01U,
-        .command    = 0x01U,
-        .extended   = 0x00U,
-        .protocol   = PROTOCOL_SONY,
-    },
-    [PROTOCOL_COMMAND_STOP]  = {
-        .name       = "COMMAND_STOP",
-        .bit_count  = 12U,
-        .address    = 0x01U,
-        .command    = 0x02U,
-        .extended   = 0x00U,
-        .protocol   = PROTOCOL_SONY,
-    },
-};
-
-/**
- * @brief All possible protocol configurations.
- */
-const protocol_config_t protocol_sony_config = {
-    .id                 = PROTOCOL_SONY,
-    .name               = "SONY",
-    .tolerance_us       =  200U,
-    .header_mark_us     = 2400U,
-    .header_space_us    =  600U,
-    .bit0_mark_us       =  600U,
-    .bit0_space_us      =  600U,
-    .bit1_mark_us       = 1200U,
-    .bit1_space_us      =  600U,
-    .commands           = protocol_sony_commands
-};
