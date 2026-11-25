@@ -35,9 +35,7 @@ const protocol_config_t *protocol_get_protocol_config(protocol_t protocol) {
     return protocols[protocol].config;
 }
 
-protocol_command_t protocol_get_command(
-    protocol_command_config_t *command
-) {
+protocol_command_t protocol_get_command(protocol_command_config_t *command) {
     if (command == NULL) {
         LOG_E("invalid command");
 
@@ -66,7 +64,14 @@ protocol_command_t protocol_get_command(
         }
     }
 
-    LOG_E("no matching protocol command name");
+    LOG_E(
+        "no matching command with %02d bits, address 0x%02X, command 0x%02X"
+        ", and extended 0x%02X",
+        command->bit_count,
+        command->address,
+        command->command,
+        command->extended
+    );
 
     return PROTOCOL_COMMAND_UNDEFINED;
 }
