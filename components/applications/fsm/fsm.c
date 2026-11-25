@@ -2,7 +2,12 @@
 #include "fsm.h"
 #include "led.h"
 #include "logging.h"
+#if   defined(CONFIG_MAINBOARD_V3)
 #include "microstart.h"
+#elif defined(CONFIG_MAINBOARD_V2)
+#elif defined(CONFIG_MAINBOARD_V1)
+#include "microstart.h"
+#endif
 #include "pwm.h"
 #include "radio.h"
 #include "sensor.h"
@@ -94,7 +99,12 @@ const char *fsm_get_state_name(fsm_state_t state) {
 
 void fsm_init(void) {
     esc_init();
+#if   defined(CONFIG_MAINBOARD_V3)
     microstart_init();
+#elif defined(CONFIG_MAINBOARD_V2)
+#elif defined(CONFIG_MAINBOARD_V1)
+    microstart_init();
+#endif
     radio_init();
     sensor_init();
 

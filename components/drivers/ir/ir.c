@@ -35,7 +35,13 @@ static bool IRAM_ATTR ir_rmt_rx_on_recv_done(
 static ir_t ir = {
     .name               = "VS1838B",
     .protocol           = PROTOCOL_SONY,
+#if   defined(CONFIG_MAINBOARD_V3)
     .pin                = PIN_IR,
+#elif defined(CONFIG_MAINBOARD_V2)
+    .pin                = PIN_IR,
+#elif defined(CONFIG_MAINBOARD_V1)
+    .pin                = PIN_SPARE,
+#endif
     .pin_pullup         = GPIO_PULLUP_ENABLE,
     .rmt_rx_inverted_in = true,
     .state              = IR_STATE_STANDBY,

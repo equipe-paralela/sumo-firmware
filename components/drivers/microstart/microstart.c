@@ -9,7 +9,13 @@
 
 static microstart_t microstart = {
     .name           = "Microstart",
+#if   defined(CONFIG_MAINBOARD_V3)
     .pin            = PIN_MICROSTART,
+#elif defined(CONFIG_MAINBOARD_V2)
+    .pin            = PIN_IO10,
+#elif defined(CONFIG_MAINBOARD_V1)
+    .pin            = PIN_MICROSTART,
+#endif
     .state          = MICROSTART_STATE_STANDBY,
     .state_names    = {
         [MICROSTART_STATE_STANDBY] = "STANDBY",

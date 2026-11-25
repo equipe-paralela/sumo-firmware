@@ -38,8 +38,14 @@ void autonomous_exit(void) {
 
 void autonomous_run(void) {
     if (
+#if   defined(CONFIG_MAINBOARD_V3)
         (microstart_get_state() != MICROSTART_STATE_START) ||
         (ir_get_state()         != IR_STATE_START)
+#elif defined(CONFIG_MAINBOARD_V2)
+        (ir_get_state()         != IR_STATE_START)
+#elif defined(CONFIG_MAINBOARD_V1)
+        (microstart_get_state() != MICROSTART_STATE_START)
+#endif
     ) {
         return fsm_transition(FSM_STATE_SAFE);
     }
