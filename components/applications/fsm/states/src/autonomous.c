@@ -1,8 +1,14 @@
 #include "autonomous.h"
 #include "controller.h"
 #include "fsm.h"
+#if   defined(CONFIG_MAINBOARD_V3)
 #include "ir.h"
 #include "microstart.h"
+#elif defined(CONFIG_MAINBOARD_V2)
+#include "ir.h"
+#elif defined(CONFIG_MAINBOARD_V1)
+#include "microstart.h"
+#endif
 #include "sensor.h"
 
 static const controller_command_t autonomous_commands[] = {
