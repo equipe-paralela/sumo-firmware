@@ -64,7 +64,7 @@ protocol_command_t protocol_get_command(protocol_command_config_t *command) {
         }
     }
 
-    LOG_E(
+    LOG_W(
         "no matching command with %02d bits, address 0x%02X, command 0x%02X"
         ", and extended 0x%02X",
         command->bit_count,
