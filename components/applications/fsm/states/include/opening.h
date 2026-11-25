@@ -290,12 +290,11 @@ const char *opening_get_strategy_name(opening_t strategy);
  * @note Transition to ``FSM_STATE_AUTONOMOUS`` when:
  * - ``CONFIG_CONTROL_AUTONOMOUS``
  *
- * - in ``CONFIG_MAINBOARD_V3``: ``IR_STATE_RUN`` and
- * ``MICROSTART_STATE_START``
+ * - in ``CONFIG_MAINBOARD_V3``: ``IR_STATE_RUN`` and ``MICROSTART_STATE_RUN``
  *
  * - in ``CONFIG_MAINBOARD_V2``: ``IR_STATE_RUN``
  *
- * - in ``CONFIG_MAINBOARD_V1``: ``MICROSTART_STATE_START``
+ * - in ``CONFIG_MAINBOARD_V1``: ``MICROSTART_STATE_RUN``
  *
  * @note Transition to ``FSM_STATE_MANUAL`` when:
  * - ``CONFIG_CONTROL_RADIO``

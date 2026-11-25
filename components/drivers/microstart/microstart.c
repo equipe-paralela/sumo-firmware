@@ -19,7 +19,7 @@ static microstart_t microstart = {
     .state          = MICROSTART_STATE_STANDBY,
     .state_names    = {
         [MICROSTART_STATE_STANDBY] = "STANDBY",
-        [MICROSTART_STATE_START]   = "START",
+        [MICROSTART_STATE_RUN]   = "START",
         [MICROSTART_STATE_STOP]    = "STOP",
     },
 };
@@ -49,10 +49,10 @@ static void IRAM_ATTR microstart_isr(void *arg) {
 
     switch (microstart.state) {
         case MICROSTART_STATE_STANDBY:
-            if ( signal_start)   { microstart.state = MICROSTART_STATE_START; };
+            if ( signal_start)   { microstart.state = MICROSTART_STATE_RUN; };
             break;
 
-        case MICROSTART_STATE_START:
+        case MICROSTART_STATE_RUN:
             if (!signal_start)   { microstart.state = MICROSTART_STATE_STOP; };
             break;
 

@@ -43,11 +43,11 @@ void autonomous_exit(void);
  *
  * @note Transition to ``FSM_STATE_SAFE`` when:
  * - in ``CONFIG_MAINBOARD_V3``: **not** ``IR_STATE_RUN`` or **not**
- * ``MICROSTART_STATE_START``
+ * ``MICROSTART_STATE_RUN``
  *
  * - in ``CONFIG_MAINBOARD_V2``: **not** ``IR_STATE_RUN``
  *
- * - in ``CONFIG_MAINBOARD_V1``: **not** ``MICROSTART_STATE_START``
+ * - in ``CONFIG_MAINBOARD_V1``: **not** ``MICROSTART_STATE_RUN``
  *
  * @note Transition to ``FSM_STATE_SURVIVE`` when:
  * - ``sensor_detected_line()``

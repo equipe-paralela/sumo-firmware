@@ -46,12 +46,12 @@ void search_exit(void) {
 void search_run(void) {
     if (
 #if   defined(CONFIG_MAINBOARD_V3)
-        (microstart_get_state() != MICROSTART_STATE_START) ||
+        (microstart_get_state() != MICROSTART_STATE_RUN) ||
         (ir_get_state()         != IR_STATE_RUN)
 #elif defined(CONFIG_MAINBOARD_V2)
         (ir_get_state()         != IR_STATE_RUN)
 #elif defined(CONFIG_MAINBOARD_V1)
-        (microstart_get_state() != MICROSTART_STATE_START)
+        (microstart_get_state() != MICROSTART_STATE_RUN)
 #endif
     ) {
         return fsm_transition(FSM_STATE_SAFE);

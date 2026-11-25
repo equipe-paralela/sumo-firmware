@@ -12,12 +12,30 @@
 
 /**
  * @brief Microstart states.
+ *
+ * Once in the ``MICROSTART_STATE_STOP``, power reset is required to return to
+ * the ``MICROSTART_STATE_STANDBY``.
  */
 typedef enum microstart_state {
-    MICROSTART_STATE_STANDBY = 0,   /**< Microstart waiting on commands. */
-    MICROSTART_STATE_START,         /**< Microstart received the start command. */
-    MICROSTART_STATE_STOP,          /**< Microstart received the stop command . */
-    NUMBER_OF_MICROSTART_STATES     /**< Number of microstart states. */
+    /**
+     * @brief Microstart waiting on commands.
+     */
+    MICROSTART_STATE_STANDBY = 0,
+
+    /**
+     * @brief Microstart received the run command.
+     */
+    MICROSTART_STATE_RUN,
+
+    /**
+     * @brief Microstart received the stop command .
+     */
+    MICROSTART_STATE_STOP,
+
+    /**
+     * @brief Number of microstart states.
+     */
+    NUMBER_OF_MICROSTART_STATES
 } microstart_state_t;
 
 /**

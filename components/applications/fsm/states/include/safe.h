@@ -26,11 +26,11 @@ void safe_entry(void);
  *
  * - ``OPENING_STATE_FINISHED``
  *
- * - in ``CONFIG_MAINBOARD_V3``: ``IR_STATE_RUN`` and ``MICROSTART_STATE_START``
+ * - in ``CONFIG_MAINBOARD_V3``: ``IR_STATE_RUN`` and ``MICROSTART_STATE_RUN``
  *
  * - in ``CONFIG_MAINBOARD_V2``: ``IR_STATE_RUN``
  *
- * - in ``CONFIG_MAINBOARD_V1``: ``MICROSTART_STATE_START``
+ * - in ``CONFIG_MAINBOARD_V1``: ``MICROSTART_STATE_RUN``
  *
  * @note Transition to ``FSM_STATE_MANUAL`` when:
  * - ``CONFIG_CONTROL_RADIO``
