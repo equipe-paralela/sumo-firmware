@@ -37,11 +37,11 @@ typedef enum ir_state {
      * @brief Infrared receiver received the stop command.
      */
     IR_STATE_STOP,
-    
+
     /**
      * @brief Number of infrared states.
      */
-    NUMBER_OF_IR_STATES 
+    NUMBER_OF_IR_STATES
 } ir_state_t;
 
 /**
