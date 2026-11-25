@@ -63,8 +63,8 @@ ir_state_t ir_get_state(void) {
 
 const char *ir_get_state_name(void) {
     const ir_state_t state = ir_get_state();
-    if ((unsigned)state >= NUMBER_OF_IR_STATES) {
-        return "INVALID";
+    if ((unsigned) state >= NUMBER_OF_IR_STATES) {
+        return NULL;
     }
 
     return ir.state_names[state];
