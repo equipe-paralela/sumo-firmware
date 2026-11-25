@@ -19,7 +19,6 @@ bool protocol_decode(
     protocol_command_config_t *command
 ) {
     return protocols[protocol].decode(
-        protocols[protocol].config,
         symbols,
         num_symbols,
         command

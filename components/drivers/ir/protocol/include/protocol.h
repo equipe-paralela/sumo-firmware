@@ -184,7 +184,6 @@ typedef struct protocol_config {
  * @return true if decoding succeeded, false otherwise.
  */
 typedef bool (*protocol_decode_t) (
-    const protocol_config_t *protocol,
     const rmt_symbol_word_t *symbols,
     size_t num_symbols,
     protocol_command_config_t *command

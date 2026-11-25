@@ -17,12 +17,11 @@ static bool in_range(uint32_t measured, uint32_t expected, uint32_t tolerance) {
 };
 
 bool protocol_sony_decode(
-    const protocol_config_t *protocol,
     const rmt_symbol_word_t *symbols,
     size_t num_symbols,
     protocol_command_config_t *command
 ) {
-    if (command == NULL || protocol == NULL || symbols == NULL) {
+    if (command == NULL || symbols == NULL) {
         return false;
     }
 
@@ -38,13 +37,13 @@ bool protocol_sony_decode(
         (header_mark == header_space) ||
         !in_range(
             symbols[0].duration0,
-            protocol->header_mark_us,
-            protocol->tolerance_us
+            protocol_sony_config.header_mark_us,
+            protocol_sony_config.tolerance_us
         ) ||
         !in_range(
             symbols[0].duration1,
-            protocol->header_space_us,
-            protocol->tolerance_us
+            protocol_sony_config.header_space_us,
+            protocol_sony_config.tolerance_us
         )
     ) {
         return false;
@@ -65,8 +64,8 @@ bool protocol_sony_decode(
             ((bit + 1U) < bit_count) &&
             !in_range(
                 symbol->duration1,
-                protocol->bit0_space_us,
-                protocol->tolerance_us
+                protocol_sony_config.bit0_space_us,
+                protocol_sony_config.tolerance_us
             )
         ) {
             return false;
@@ -75,8 +74,8 @@ bool protocol_sony_decode(
         if (
             in_range(
                 symbol->duration0,
-                protocol->bit0_mark_us,
-                protocol->tolerance_us
+                protocol_sony_config.bit0_mark_us,
+                protocol_sony_config.tolerance_us
             )
         ) {
             // set data[bit] to 0
@@ -84,8 +83,8 @@ bool protocol_sony_decode(
         } else if (
             in_range(
                 symbol->duration0,
-                protocol->bit1_mark_us,
-                protocol->tolerance_us
+                protocol_sony_config.bit1_mark_us,
+                protocol_sony_config.tolerance_us
             )
         ) {
             // set data[bit] to 1
@@ -99,7 +98,7 @@ bool protocol_sony_decode(
     command->bit_count  = (uint8_t) bit_count;
     command->command    = data & 0x7FU;
     command->extended   = 0U;
-    command->protocol   = protocol->id;
+    command->protocol   = protocol_sony_config.id;
 
     switch (bit_count) {
         case 12U:
