@@ -131,7 +131,7 @@ void ir_init(void) {
         )
     );
 
-    ir.state = IR_STATE_WAIT;
+    ir.state = IR_STATE_STANDBY;
 
     LOG_I("%s initialized to state %s", ir_get_name(), ir_get_state_name());
 };

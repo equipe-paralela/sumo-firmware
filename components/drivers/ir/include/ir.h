@@ -16,16 +16,32 @@
 
 /**
  * @brief Infrared states.
- *
- * @note The @ref protocol_command_name command names must match the
- * defined @ref ir_state infrared states sequence.
  */
 typedef enum ir_state {
-    IR_STATE_READY= 0,  /**< Infrared receiver received the ready command. */
-    IR_STATE_START,     /**< Infrared receiver received the start command. */
-    IR_STATE_STOP,      /**< Infrared receiver received the stop command . */
-    IR_STATE_WAIT,      /**< Infrared receiver waiting commands. */
-    NUMBER_OF_IR_STATES /**< Number of infrared states. */
+    /**
+     * @brief Infrared receiver received the ready command.
+     */
+    IR_STATE_READY= 0,
+
+    /**
+     * @brief Infrared receiver waiting commands.
+     */
+    IR_STATE_STANDBY,
+
+    /**
+     * @brief Infrared receiver received the start command.
+     */
+    IR_STATE_START,
+
+    /**
+     * @brief Infrared receiver received the stop command.
+     */
+    IR_STATE_STOP,
+    
+    /**
+     * @brief Number of infrared states.
+     */
+    NUMBER_OF_IR_STATES 
 } ir_state_t;
 
 /**
