@@ -29,10 +29,10 @@ void search_exit(void);
  * While active, autonomous align with the adversary.
  *
  * @note Transition to ``FSM_STATE_SAFE`` when:
- * - in ``CONFIG_MAINBOARD_V3``: **not** ``IR_STATE_START`` or **not**
+ * - in ``CONFIG_MAINBOARD_V3``: **not** ``IR_STATE_RUN`` or **not**
  * ``MICROSTART_STATE_START``
  *
- * - in ``CONFIG_MAINBOARD_V2``: **not** ``IR_STATE_START``
+ * - in ``CONFIG_MAINBOARD_V2``: **not** ``IR_STATE_RUN``
  *
  * - in ``CONFIG_MAINBOARD_V1``: **not** ``MICROSTART_STATE_START``
  *

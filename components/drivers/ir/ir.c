@@ -48,7 +48,7 @@ static ir_t ir = {
     .state_names = {
         [IR_STATE_READY]    = "READY",
         [IR_STATE_STANDBY]  = "STANDBY",
-        [IR_STATE_START]    = "START",
+        [IR_STATE_RUN]    = "START",
         [IR_STATE_STOP]     = "STOP",
     }
 };
@@ -172,12 +172,12 @@ void ir_poll(void) {
 
             case PROTOCOL_COMMAND_START:
                 if (current_state == IR_STATE_READY) {
-                    ir_set_state(IR_STATE_START);
+                    ir_set_state(IR_STATE_RUN);
                 }
                 break;
 
             case PROTOCOL_COMMAND_STOP:
-                if (current_state == IR_STATE_START) {
+                if (current_state == IR_STATE_RUN) {
                     ir_set_state(IR_STATE_STOP);
                 }
                 break;

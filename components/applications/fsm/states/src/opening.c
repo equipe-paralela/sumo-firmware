@@ -388,7 +388,7 @@ static void opening_execution(void) {
  *
  * The ``config_control_mode_t`` defines the release condition:
  *
- * - In ``CONFIG_CONTROL_AUTONOMOUS`` wait for ``IR_STATE_START`` and
+ * - In ``CONFIG_CONTROL_AUTONOMOUS`` wait for ``IR_STATE_RUN`` and
  * ``MICROSTART_STATE_START``
  *
  * - In ``CONFIG_CONTROL_RADIO`` wait for another button press.
@@ -399,9 +399,9 @@ static void opening_release(void) {
             if (
 #if   defined(CONFIG_MAINBOARD_V3)
                 (microstart_get_state() == MICROSTART_STATE_START) &&
-                (ir_get_state()         == IR_STATE_START)
+                (ir_get_state()         == IR_STATE_RUN)
 #elif defined(CONFIG_MAINBOARD_V2)
-                (ir_get_state()         == IR_STATE_START)
+                (ir_get_state()         == IR_STATE_RUN)
 #elif defined(CONFIG_MAINBOARD_V1)
                 (microstart_get_state() == MICROSTART_STATE_START)
 #endif
@@ -512,9 +512,9 @@ void opening_run(void) {
                     if (
 #if   defined(CONFIG_MAINBOARD_V3)
                         (microstart_get_state() == MICROSTART_STATE_START) &&
-                        (ir_get_state()         == IR_STATE_START)
+                        (ir_get_state()         == IR_STATE_RUN)
 #elif defined(CONFIG_MAINBOARD_V2)
-                        (ir_get_state()         == IR_STATE_START)
+                        (ir_get_state()         == IR_STATE_RUN)
 #elif defined(CONFIG_MAINBOARD_V1)
                         (microstart_get_state() == MICROSTART_STATE_START)
 #endif

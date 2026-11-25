@@ -29,9 +29,9 @@ typedef enum ir_state {
     IR_STATE_STANDBY,
 
     /**
-     * @brief Infrared receiver received the start command.
+     * @brief Infrared receiver received the run command.
      */
-    IR_STATE_START,
+    IR_STATE_RUN,
 
     /**
      * @brief Infrared receiver received the stop command.
@@ -144,9 +144,9 @@ void ir_init(void);
  * - ``PROTOCOL_COMMAND_READY`` updates the state to ``IR_STATE_READY``.
  *
  * @note When the ``ir.state`` is at ``IR_STATE_READY``:
- * - ``PROTOCOL_COMMAND_START`` updates the state to ``IR_STATE_START``.
+ * - ``PROTOCOL_COMMAND_START`` updates the state to ``IR_STATE_RUN``.
  *
- * @note When the ``ir.state`` is at ``IR_STATE_START``:
+ * @note When the ``ir.state`` is at ``IR_STATE_RUN``:
  * - ``PROTOCOL_COMMAND_STOP`` updates the state to ``IR_STATE_STOP``.
  *
  * @note When the ``ir.state`` is at ``IR_STATE_STOP``:
