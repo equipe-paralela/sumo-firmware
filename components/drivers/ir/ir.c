@@ -194,8 +194,13 @@ void ir_poll(void) {
 }
 
 void ir_set_state(ir_state_t state) {
-    // todo check valid state
+    if ((unsigned) state >= NUMBER_OF_IR_STATES) {
+        LOG_E("invalid state for %02d", state);
+    }
+
     portDISABLE_INTERRUPTS();
     ir.state = state;
     portENABLE_INTERRUPTS();
+
+    LOG_I("state set to %s", ir_get_state_name());
 };
